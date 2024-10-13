@@ -6,6 +6,8 @@ import pathlib
 from typing import List
 from PIL import Image, ImageDraw
 
+import threading
+
 from ultralytics import YOLO
 
 
@@ -158,4 +160,30 @@ class Perception():
         return image, target, positions_in_world, distances
     
 
-    def process_thread()
+    def process_video(self, port_camera: str="/dev/video2"):
+        cap = cv2.VideoCapture(port_camera)
+
+        if not cap.isOpened():
+            print("Не удалось открыть камеру")
+            exit()
+
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                print("Не удалось получить кадр")
+                break
+
+            image, target, positions_in_world, distances = self.process(frame)
+
+            # cv2.imshow('YOLOv8 Detection', image)
+
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
+        cap.release()
+        # cv2.destroyAllWindows()
+
+    
+    def process_thread(self, port_camera: str="/dev/video2"):
+        yolo_thread = threading.Thread(target=self.process_video, args=(port_camera))
+        yolo_thread.start()
