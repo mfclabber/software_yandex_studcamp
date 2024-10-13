@@ -1,0 +1,7 @@
+cv2
+numpy
+torch
+pathlib
+pillow
+typing
+ultralytics

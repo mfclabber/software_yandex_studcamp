@@ -1,0 +1,7 @@
+raw_buttons_dataset.zip
+
+perception/weights/buttons.pt
+perception/weights/red_boxes.pt
+perception/src/__pycache__
+
+data/*
