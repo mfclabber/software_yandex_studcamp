@@ -24,6 +24,10 @@ from xr_motor import RobotDirection
 
 go = RobotDirection()
 
+from servo_func import Servo_Funct_CLASS
+
+servo_func = Servo_Funct_CLASS()
+
 from xr_servo import Servo
 servo = Servo()
 
@@ -69,7 +73,7 @@ class PS2(object):
 		add = 5
 		if cfg.PS2_LASTKEY != read_ps2 and cfg.PS2_LASTKEY != 0:		# 如果上一次的值不是0并且不等于这次的值，说明按键值有变化并且不为0
 			go.stop()		# 按键值有变化时执行一次有且一次停止
-			cfg.LIGHT_STATUS = cfg.STOP		# 将按键状态设置为停止
+			#cfg.LIGHT_STATUS = cfg.STOP		# 将按键状态设置为停止
 			cfg.PS2_LASTKEY = 0		# 给上一次状态赋值0，避免再次进入而停止
 
 		else:
@@ -85,44 +89,46 @@ class PS2(object):
 
 			elif read_ps2 == cfg.PS2_KEY['PSB_PAD_LEFT']:  # 等于左侧按键左键
 				go.left()
-				cfg.LIGHT_STATUS = cfg.TURN_LEFT
+				#cfg.LIGHT_STATUS = cfg.TURN_LEFT
 				time.sleep(0.02)
 				cfg.PS2_LASTKEY = read_ps2
 
 			elif read_ps2 == cfg.PS2_KEY['PSB_PAD_RIGHT']:  # 等于左侧按键右键
 				go.right()
-				cfg.LIGHT_STATUS = cfg.TURN_RIGHT
+				#cfg.LIGHT_STATUS = cfg.TURN_RIGHT
 				time.sleep(0.02)
 				cfg.PS2_LASTKEY = read_ps2
 
 			if read_ps2 == cfg.PS2_KEY['PSB_RED']:  # 等于红色按键
-				# print('PSB_RED')
-				if (cfg.ANGLE[6] - add) < 180:
-					cfg.ANGLE[6] = cfg.ANGLE[6] + add
-				else:
-					cfg.ANGLE[6] = 180
-				servo.set(7, cfg.ANGLE[6])
-
+				servo_func.starting_pose()
+				time.sleep(0.1)
+				servo_func.start_take_object()
+				servo_func.take_object()
+				time.sleep(0.5)
+				
 			elif read_ps2 == cfg.PS2_KEY['PSB_PINK']:  # 等于粉色按键
-				# print('PSB_BLUE')
-				if (cfg.ANGLE[6] - add) > 0:
-					cfg.ANGLE[6] = cfg.ANGLE[6] - add
-				else:
-					cfg.ANGLE[6] = 0
-				servo.set(7, cfg.ANGLE[6])
-
+				# # print('PSB_BLUE')
+				# if (cfg.ANGLE[6] - add) > 0:
+				# 	cfg.ANGLE[6] = cfg.ANGLE[6] - add
+				# else:
+				# 	cfg.ANGLE[6] = 0
+				# servo.set(7, cfg.ANGLE[6])
+				servo_func.getup_object()
+				time.sleep(0.5)
 			elif read_ps2 == cfg.PS2_KEY['PSB_GREEN']:  # 等于绿色按键
-				# print('PSB_GREEN')
-				if (cfg.ANGLE[7] - add) < 155:
-					cfg.ANGLE[7] = cfg.ANGLE[7] + add
-				else:
-					cfg.ANGLE[7] = 155
-				servo.set(8, cfg.ANGLE[7])
+				# # print('PSB_GREEN')
+				# if (cfg.ANGLE[7] - add) < 155:
+				# 	cfg.ANGLE[7] = cfg.ANGLE[7] + add
+				# else:
+				# 	cfg.ANGLE[7] = 155
+				# servo.set(8, cfg.ANGLE[7])
+				pass
 
 			elif read_ps2 == cfg.PS2_KEY['PSB_BLUE']:  # 等于蓝色按键
-				# print('PSB_PINK')
-				if (cfg.ANGLE[7] - add) > 0:
-					cfg.ANGLE[7] = cfg.ANGLE[7] - add
-				else:
-					cfg.ANGLE[7] = 0
-				servo.set(8, cfg.ANGLE[7])
+				# # print('PSB_PINK')
+				# if (cfg.ANGLE[7] - add) > 0:
+				# 	cfg.ANGLE[7] = cfg.ANGLE[7] - add
+				# else:
+				# 	cfg.ANGLE[7] = 0
+				# servo.set(8, cfg.ANGLE[7])
+				pass
