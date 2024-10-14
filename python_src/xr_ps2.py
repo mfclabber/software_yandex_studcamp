@@ -24,6 +24,10 @@ from xr_motor import RobotDirection
 
 go = RobotDirection()
 
+from servo_func import Servo_Funct_CLASS
+
+servo_func = Servo_Funct_CLASS()
+
 from xr_servo import Servo
 servo = Servo()
 
@@ -96,33 +100,35 @@ class PS2(object):
 				cfg.PS2_LASTKEY = read_ps2
 
 			if read_ps2 == cfg.PS2_KEY['PSB_RED']:  # 等于红色按键
-				# print('PSB_RED')
-				if (cfg.ANGLE[6] - add) < 180:
-					cfg.ANGLE[6] = cfg.ANGLE[6] + add
-				else:
-					cfg.ANGLE[6] = 180
-				servo.set(7, cfg.ANGLE[6])
-
+				servo_func.starting_pose()
+				time.sleep(0.1)
+				servo_func.start_take_object()
+				servo_func.take_object()
+				time.sleep(0.5)
+				
 			elif read_ps2 == cfg.PS2_KEY['PSB_PINK']:  # 等于粉色按键
-				# print('PSB_BLUE')
-				if (cfg.ANGLE[6] - add) > 0:
-					cfg.ANGLE[6] = cfg.ANGLE[6] - add
-				else:
-					cfg.ANGLE[6] = 0
-				servo.set(7, cfg.ANGLE[6])
-
+				# # print('PSB_BLUE')
+				# if (cfg.ANGLE[6] - add) > 0:
+				# 	cfg.ANGLE[6] = cfg.ANGLE[6] - add
+				# else:
+				# 	cfg.ANGLE[6] = 0
+				# servo.set(7, cfg.ANGLE[6])
+				servo_func.getup_object()
+				time.sleep(0.5)
 			elif read_ps2 == cfg.PS2_KEY['PSB_GREEN']:  # 等于绿色按键
-				# print('PSB_GREEN')
-				if (cfg.ANGLE[7] - add) < 155:
-					cfg.ANGLE[7] = cfg.ANGLE[7] + add
-				else:
-					cfg.ANGLE[7] = 155
-				servo.set(8, cfg.ANGLE[7])
+				# # print('PSB_GREEN')
+				# if (cfg.ANGLE[7] - add) < 155:
+				# 	cfg.ANGLE[7] = cfg.ANGLE[7] + add
+				# else:
+				# 	cfg.ANGLE[7] = 155
+				# servo.set(8, cfg.ANGLE[7])
+				pass
 
 			elif read_ps2 == cfg.PS2_KEY['PSB_BLUE']:  # 等于蓝色按键
-				# print('PSB_PINK')
-				if (cfg.ANGLE[7] - add) > 0:
-					cfg.ANGLE[7] = cfg.ANGLE[7] - add
-				else:
-					cfg.ANGLE[7] = 0
-				servo.set(8, cfg.ANGLE[7])
+				# # print('PSB_PINK')
+				# if (cfg.ANGLE[7] - add) > 0:
+				# 	cfg.ANGLE[7] = cfg.ANGLE[7] - add
+				# else:
+				# 	cfg.ANGLE[7] = 0
+				# servo.set(8, cfg.ANGLE[7])
+				pass
