@@ -69,7 +69,7 @@ class PS2(object):
 		add = 5
 		if cfg.PS2_LASTKEY != read_ps2 and cfg.PS2_LASTKEY != 0:		# 如果上一次的值不是0并且不等于这次的值，说明按键值有变化并且不为0
 			go.stop()		# 按键值有变化时执行一次有且一次停止
-			cfg.LIGHT_STATUS = cfg.STOP		# 将按键状态设置为停止
+			#cfg.LIGHT_STATUS = cfg.STOP		# 将按键状态设置为停止
 			cfg.PS2_LASTKEY = 0		# 给上一次状态赋值0，避免再次进入而停止
 
 		else:
@@ -85,13 +85,13 @@ class PS2(object):
 
 			elif read_ps2 == cfg.PS2_KEY['PSB_PAD_LEFT']:  # 等于左侧按键左键
 				go.left()
-				cfg.LIGHT_STATUS = cfg.TURN_LEFT
+				#cfg.LIGHT_STATUS = cfg.TURN_LEFT
 				time.sleep(0.02)
 				cfg.PS2_LASTKEY = read_ps2
 
 			elif read_ps2 == cfg.PS2_KEY['PSB_PAD_RIGHT']:  # 等于左侧按键右键
 				go.right()
-				cfg.LIGHT_STATUS = cfg.TURN_RIGHT
+				#cfg.LIGHT_STATUS = cfg.TURN_RIGHT
 				time.sleep(0.02)
 				cfg.PS2_LASTKEY = read_ps2
 

@@ -34,6 +34,8 @@ car_light = Car_light()
 from xr_music import Beep
 beep = Beep()
 
+from xr_infrared import Infrared
+infr = Infrared()
 
 class Socket:
 	def __init__(self):
@@ -317,6 +319,15 @@ class Socket:
 
 		elif buffer[0] == 0x45:
 			go.forward_with_angle(buffer[1],buffer[2])
+
+		elif buffer[0] == 0x46:
+			if buffer[1] == 0x00:
+				self.sendbuf(infr.get_data("l"))
+			elif buffer[1] == 0x01:
+				self.sendbuf(infr.get_data("m"))
+			elif buffer[1] == 0x02:
+				self.sendbuf(infr.get_data("r"))
+
 
 		elif buffer == [0xef, 0xef, 0xee]:
 			print("Heartbeat Packet!")
