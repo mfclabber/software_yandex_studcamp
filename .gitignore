@@ -1,6 +1,7 @@
 raw_buttons_dataset.zip
-combined_video.mp4
-image.png
+
+*.png
+*.mp4
 
 perception/weights/buttons.pt
 perception/weights/red_boxes.pt

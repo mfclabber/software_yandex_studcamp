@@ -2,11 +2,13 @@ import cv2
 import torch
 import numpy as np
 
+import time
 import pathlib
 from typing import List
 from PIL import Image, ImageDraw
 
 import threading
+import queue
 
 from ultralytics import YOLO
 
@@ -54,6 +56,8 @@ class Perception():
         self.confidence = 50
 
         self.PORT_CAMERA = port_camera
+
+        self.data_perception_queue = queue.Queue()
 
 
     @staticmethod
@@ -167,15 +171,88 @@ class Perception():
             print("Не удалось открыть камеру")
             exit()
 
+        frame_count = 0
+        fps_count = 0
+        start_time = time.time()
+        fps = 0 
+        print("YOLOv8 RUN!!!")
         while True:
             ret, frame = cap.read()
+
+            # CLAHE
+            # lab_img = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
+
+            # # Применение CLAHE к каналу L (Lightness - Яркость)
+            # clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(4, 4))
+            # lab_img[:, :, 0] = clahe.apply(lab_img[:, :, 0])
+
+            # # Преобразование обратно в BGR
+            # frame = cv2.cvtColor(lab_img, cv2.COLOR_LAB2BGR)
+
+
+                        # Преобразование в цветовую модель YUV
+            # yuv_img = cv2.cvtColor(frame, cv2.COLOR_BGR2YUV)
+
+            # # Выравнивание гистограммы только по яркостному каналу (Y)
+            # yuv_img[:, :, 0] = cv2.equalizeHist(yuv_img[:, :, 0])
+
+            # # Преобразование обратно в BGR
+            # frame= cv2.cvtColor(yuv_img, cv2.COLOR_YUV2BGR)
+
+
+            channels = cv2.split(frame)
+
+            equalized_channels = []
+            for channel in channels:
+                equalized_channels.append(cv2.equalizeHist(channel))
+
+            frame = cv2.merge(equalized_channels)
+            lab_img = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
+
+            lab_img[:, :, 1] = cv2.add(lab_img[:, :, 1], 5)
+            frame = cv2.cvtColor(lab_img, cv2.COLOR_LAB2BGR)
+
+
+            # height, width = frame.shape[:2]
+            # mask = np.zeros((height, width), dtype=np.float32)
+
+            # # Верхняя часть затемнена, нижняя - без изменений (градиентная маска)
+            # for i in range(height):
+            #     mask[i, :] = i / height
+
+            # # Преобразование изображения в HSV для работы с яркостью
+            # hsv_image = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+            # # Применение маски к каналу яркости (Value)
+            # hsv_image[:, :, 2] = (hsv_image[:, :, 2] * (1 - 0.5 * mask)).astype(np.uint8)
+
+            # # Преобразование обратно в BGR
+            # corrected_image = cv2.cvtColor(frame, cv2.COLOR_HSV2BGR)
+            
+
             if not ret:
                 print("Не удалось получить кадр")
                 break
 
-            image, target, positions_in_world, distances = self.process(frame)
+            frame_count += 1
 
-            # cv2.imshow('YOLOv8 Detection', image)
+            if frame_count % 5 == 0:
+                image, target, positions_in_world, distances = self.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+                
+                current_time = time.time()
+                fps = fps_count / (current_time - start_time) if current_time > start_time else 0
+
+                cv2.putText(image, f"FPS: {fps:.2f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                cv2.imshow('YOLOv8 Detection', cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+
+                fps_count = 0
+                start_time = current_time
+
+                self.data_perception_queue.put((image, target, positions_in_world, distances))
+                print("Данные отправлены в очередь")
+                time.sleep(0.01)
+
+            fps_count += 1 
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
@@ -185,5 +262,18 @@ class Perception():
 
     
     def process_thread(self, port_camera: str="/dev/video2"):
-        yolo_thread = threading.Thread(target=self.process_video, args=(port_camera))
+        yolo_thread = threading.Thread(target=self.process_video, args=(port_camera, ))
         yolo_thread.start()
+
+        return yolo_thread
+
+
+    def get_data(self, yolo_thread: threading.Thread):
+
+        while yolo_thread.is_alive() or not self.data_perception_queue.empty():
+            if not self.data_perception_queue.empty():
+                image, target, positions_in_world, distances = self.data_perception_queue.get()
+                print(target)
+            else:
+                time.sleep(0.1)
+        print("Поток завершен, данные больше не поступают")
