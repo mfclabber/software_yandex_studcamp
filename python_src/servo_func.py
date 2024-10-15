@@ -1,11 +1,13 @@
 from xr_i2c import I2c
 import time
 
+# 1 4 3 2
+
 i2c = I2c()
 
-max_angles = [130, 330, 65, 35] # 1 4 3 2
-get_object_angles = [50, 160, 65, 60] # 1 4 3 2
-getup_object_angles = [130, 160, 65, 35] 
+max_angles = [130, 290, 65, 130] # 1 2 3 4
+get_object_angles = [50, 310, 65, 160] 
+getup_object_angles = [130, 290, 65, 160] 
 starting_take_ball_object_angles = [0, 330, 65, 200] 
 
 class Servo_Func_CLASS():
@@ -24,8 +26,8 @@ class Servo_Func_CLASS():
 
         for num, angle in enumerate(get_object_angles):
 
-            if num+1 == 2:
-                angle = max_angles[1]
+            if num+1 == 4:
+                angle = max_angles[3]
 
             buf = [0xff, 0x01, num+1, angle, 0xff]
             i2c.writedata(i2c.mcu_address, buf)
@@ -49,22 +51,22 @@ class Servo_Func_CLASS():
 
             #if num+1 == 4:
             #    angle = get_object_angles[3] + 30
-            if num+1 == 1:
-                angle = max_angles[0]
+            # if num+1 == 1:
+            #     angle = max_angles[0]
 
             buf = [0xff, 0x01, num+1, angle, 0xff]
             i2c.writedata(i2c.mcu_address, buf)
 
         time.sleep(0.7)
 
-        for num, angle in enumerate(getup_object_angles):
+        # for num, angle in enumerate(getup_object_angles):
             
-            if num == 3:
+        #     if num == 3:
 
-                for range_angle in range(get_object_angles[-1], angle, -5):
-                    buf = [0xff, 0x01, num+1, range_angle, 0xff]
-                    i2c.writedata(i2c.mcu_address, buf)
-                    time.sleep(0.1)
+        #         for range_angle in range(get_object_angles[-1], angle, -5):
+        #             buf = [0xff, 0x01, num+1, range_angle, 0xff]
+        #             i2c.writedata(i2c.mcu_address, buf)
+        #             time.sleep(0.1)
 
 
     def starting_take_ball(self):
@@ -94,7 +96,10 @@ class Servo_Func_CLASS():
 
 servo = Servo_Func_CLASS()
 servo.starting_pose()
-# starting_take_ball()
+servo.start_take_object()
+servo.take_object()
+
+# servo.starting_take_ball()
 # take_ball()
 # start_take_object()
 # take_object()
