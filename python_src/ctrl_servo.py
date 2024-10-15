@@ -59,6 +59,11 @@ class CTRL_Servo():
         buf = [0xff, 0x01, 4, angle, 0xff]  # соответствует S4 проводу (клешня)
         i2c.writedata(i2c.mcu_address, buf)
         self.NOW_ANGLES[3] = angle
+
+    def set_s7(self,angle):
+        buf = [0xff, 0x01, 7, angle, 0xff]  # соответствует S4 проводу (клешня)
+        i2c.writedata(i2c.mcu_address, buf)
+        self.NOW_ANGLES[3] = angle
     
     def set_angles(self, angles):
         self.set_s1(angles[0])
@@ -149,11 +154,12 @@ class CTRL_Servo():
 
 control_s = CTRL_Servo()
 
+control_s.set_s7(50)
 # control_s.take_cube()
-time.sleep(2)
+# time.sleep(2)
 # control_s.set_claw(True)
-control_s.push_button()
-control_s.high_pose()
+# control_s.push_button()
+# control_s.high_pose()
 
 
 #control_s.gently_change([control_s.HIGH_S1,control_s.MIDDLE_S2,65,130])
