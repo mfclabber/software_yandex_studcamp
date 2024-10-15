@@ -19,7 +19,7 @@ from builtins import int, chr, object
 
 import xr_gpio as gpio
 import xr_config as cfg
-
+from xr_i2c import I2c
 from xr_motor import RobotDirection
 go = RobotDirection()
 
@@ -176,11 +176,15 @@ class Ultrasonic(object):
 			go.stop()
 			time.sleep(0.1)
 
-ult = Ultrasonic()
-time_1 = 0
-while True:
-	time_1 += 1
-	print(ult.get_distance())
-	time.sleep(1)
-	if time_1 > 10:
-		break
+# ult = Ultrasonic()
+# time_1 = 0
+# while True:
+# 	time_1 += 1
+# 	print(ult.get_distance())
+# 	time.sleep(1)
+# 	if time_1 > 10:
+# 		break
+
+i2c = I2c()
+buf = [0xff, 0x01, 8, 150, 0xff]  # соответствует S7 проводу (УЗ)
+i2c.writedata(i2c.mcu_address, buf)
