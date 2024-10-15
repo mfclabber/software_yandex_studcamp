@@ -89,9 +89,17 @@ class RobotDirection(object):
 			else: 
 				self.m3m4_forward() # left?
 
+	def reverse(self, speed): 
+
+		self.set_speed(2, speed) # left
+		self.set_speed(1, speed) # right
+			
+		self.m3m4_forward() # left? 
+		self.m1m2_forward() # right? 
 
 go = RobotDirection()
 
-go.forward_with_angle(50, 50)
+go.forward_with_angle(80, 0)
+# go.reverse(100)
 time.sleep(1)
 go.stop()

@@ -175,3 +175,12 @@ class Ultrasonic(object):
 
 			go.stop()
 			time.sleep(0.1)
+
+ult = Ultrasonic()
+time_1 = 0
+while True:
+	time_1 += 1
+	print(ult.get_distance())
+	time.sleep(1)
+	if time_1 > 10:
+		break

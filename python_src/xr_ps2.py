@@ -24,9 +24,9 @@ from xr_motor import RobotDirection
 
 go = RobotDirection()
 
-from servo_func import Servo_Funct_CLASS
+# from servo_func import Servo_Funct_CLASS
 
-servo_func = Servo_Funct_CLASS()
+# servo_func = Servo_Funct_CLASS()
 
 from xr_servo import Servo
 servo = Servo()
@@ -99,12 +99,12 @@ class PS2(object):
 				time.sleep(0.02)
 				cfg.PS2_LASTKEY = read_ps2
 
-			if read_ps2 == cfg.PS2_KEY['PSB_RED']:  # 等于红色按键
-				servo_func.starting_pose()
-				time.sleep(0.1)
-				servo_func.start_take_object()
-				servo_func.take_object()
-				time.sleep(0.5)
+			# if read_ps2 == cfg.PS2_KEY['PSB_RED']:  # 等于红色按键
+			# 	servo_func.starting_pose()
+			# 	time.sleep(0.1)
+			# 	servo_func.start_take_object()
+			# 	servo_func.take_object()
+			# 	time.sleep(0.5)
 				
 			elif read_ps2 == cfg.PS2_KEY['PSB_PINK']:  # 等于粉色按键
 				# # print('PSB_BLUE')

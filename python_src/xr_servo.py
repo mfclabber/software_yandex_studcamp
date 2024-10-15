@@ -1,15 +1,15 @@
 # coding:utf-8
 """
-树莓派WiFi无线视频小车机器人驱动源码
-作者：Sence
-版权所有：小R科技（深圳市小二极客科技有限公司www.xiao-r.com）；WIFI机器人网论坛 www.wifi-robots.com
-本代码可以自由修改，但禁止用作商业盈利目的！
-本代码已申请软件著作权保护，如有侵权一经发现立即起诉！
+Драйвер исходного кода для робота с Wi-Fi на базе Raspberry Pi
+Автор: Sence
+Правообладатель: XiaoR Technology (Shenzhen XiaoerGeek Technology Co., Ltd www.xiao-r.com); Форум WiFi Robots www.wifi-robots.com
+Этот код может свободно модифицироваться, но запрещено использовать его в коммерческих целях!
+Этот код защищён авторскими правами на программное обеспечение, любое нарушение будет немедленно преследоваться по закону!
 """
 """
 @version: python3.7
 @Author  : xiaor
-@Explain :控制舵机
+@Explain : управление сервоприводом
 @contact :
 @Time    :2020/05/09
 @File    :XiaoR_servo.py
@@ -29,26 +29,26 @@ cfgparser = HandleConfig(path_data)
 
 class Servo(object):
 	"""
-	舵机控制类
+	Класс для управления сервоприводом
 	"""
 	def __init__(self):
 		pass
 
 	def angle_limit(self, angle):
 		"""
-		对舵机角度限幅，防止舵机堵转烧毁
+		Ограничение угла сервопривода, чтобы предотвратить блокировку и перегрев сервопривода
 		"""
-		if angle > cfg.ANGLE_MAX:  # 限制最大角度值
+		if angle > cfg.ANGLE_MAX:  # Ограничение максимального угла
 			angle = cfg.ANGLE_MAX
-		elif angle < cfg.ANGLE_MIN:  # 限制最小角度值
+		elif angle < cfg.ANGLE_MIN:  # Ограничение минимального угла
 			angle = cfg.ANGLE_MIN
 		return angle
 
 	def set(self, servonum, servoangle):
 		"""
-		设置舵机角度
-		:param servonum:舵机号
-		:param servoangle:舵机角度
+		Установка угла сервопривода
+		:param servonum: номер сервопривода
+		:param servoangle: угол сервопривода
 		:return:
 		"""
 		angle = self.angle_limit(servoangle)
@@ -56,18 +56,18 @@ class Servo(object):
 		try:
 			i2c.writedata(i2c.mcu_address, buf)
 		except Exception as e:
-			print('servo write error:', e)
+			print('Ошибка записи в сервопривод:', e)
 
 	def store(self):
 		"""
-		存储舵机角度
+		Сохранение угла сервопривода
 		:return:
 		"""
 		cfgparser.save_data("servo", "angle", cfg.ANGLE)
 
 	def restore(self):
 		"""
-		恢复舵机角度
+		Восстановление угла сервопривода
 		:return:
 		"""
 		cfg.ANGLE = cfgparser.get_data("servo", "angle")
