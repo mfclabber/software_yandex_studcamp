@@ -7,7 +7,7 @@ import cv2
 from perception.src.perception import Perception
 
 if __name__ == "__main__":
-    path2model_weight = pathlib.Path("/home/mfclabber/yandex_camp_software/perception/weights/main_model_weights.pt")
+    path2model_weight = pathlib.Path("/home/itmo/software_yandex_studcamp/python_src/software_yandex_studcamp/perception/weights/main_model_weights.pt")
     
     perception = Perception(path2weights=path2model_weight)
 
