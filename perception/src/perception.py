@@ -244,6 +244,7 @@ class Perception():
 
                 # cv2.putText(image, f"FPS: {fps:.2f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
                 # cv2.imshow('YOLOv8 Detection', cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+                # cv2.imwrite('output_image.png', image)
 
                 fps_count = 0
                 start_time = current_time

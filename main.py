@@ -16,6 +16,6 @@ if __name__ == "__main__":
     # cv2.imwrite("image.png", cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
     # perception.process_thread(port_camera="/home/mfclabber/yandex_camp_software/data/videos/IMG_0419.MOV")
-    perception.process_thread(port_camera="/dev/video0")
+    yolo_thread = perception.process_thread(port_camera="/dev/video0")
 
-    perception.get_data()
+    perception.get_data(yolo_thread)
