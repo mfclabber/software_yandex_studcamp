@@ -10,8 +10,12 @@ from xr_car_light import Car_light
 
 car_light = Car_light()
 
+from led_function import LED
+
+led = LED()
 
 while True:
-    car_light.init_led()
+    led.red_team()
+    #car_light.init_led()
     #car_light.set_color_car_light('green')
     time.sleep(5)

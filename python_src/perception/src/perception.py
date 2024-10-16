@@ -53,7 +53,7 @@ class Perception():
         ], dtype=np.float32)
 
         self.model = YOLOv8n(path2weights)
-        self.confidence = 50
+        self.confidence = 40
 
         self.PORT_CAMERA = port_camera
 
@@ -164,7 +164,7 @@ class Perception():
         return image, target, positions_in_world, distances
     
 
-    def process_video(self, port_camera: str="/dev/video2"):
+    def process_video(self, port_camera: str="/dev/video0"):
         cap = cv2.VideoCapture(port_camera)
 
         if not cap.isOpened():

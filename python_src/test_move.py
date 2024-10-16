@@ -3,6 +3,7 @@ from builtins import float, object
 import os
 import time
 import xr_gpio as gpio
+import numpy as np
 
 from xr_configparser import HandleConfig
 
@@ -67,7 +68,7 @@ class RobotDirection(object):
 		angle = min(100, angle)
 		angle = max(-100, angle)
 		
-		speed2 = round(speed*(1-abs(angle)/50))
+		speed2 = np.round(speed * (1 - abs(angle) / 50))
 		
 		if angle > 0: 
 			self.set_speed(2, speed) # left
@@ -97,13 +98,13 @@ class RobotDirection(object):
 		self.m3m4_forward() # left? 
 		self.m1m2_forward() # right? 
 
-go = RobotDirection()
+# go = RobotDirection()
 
-go.forward_with_angle(50, 100)
-time.sleep(0.6)
-go.forward_with_angle(75, -20)
-# go.reverse(100)
-time.sleep(5)
-go.forward_with_angle(50,-100)
-time.sleep(1)
-go.stop()
+# go.forward_with_angle(100, 100)
+# time.sleep(0.6)
+# go.forward_with_angle(75, -20)
+# # go.reverse(100)
+# time.sleep(5)
+# go.forward_with_angle(50,-100)
+# time.sleep(1)
+# go.stop()

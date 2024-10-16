@@ -156,7 +156,7 @@ control_s.standart_pose()
 # time.sleep(1)
 
 # control_s.take_cube()
-time.sleep(1)
+# time.sleep(1)
 # time.sleep(2)
 # control_s.set_claw(False)
 # control_s.high_pose()
