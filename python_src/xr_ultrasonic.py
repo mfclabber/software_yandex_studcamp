@@ -176,6 +176,12 @@ class Ultrasonic(object):
 			go.stop()
 			time.sleep(0.1)
 
+	def rotate_sensor_l():
+		servo.set(5, 0)
+
+	def rotate_sensor_r():
+		servo.set(5, 180)
+
 # ult = Ultrasonic()
 # time_1 = 0
 # while True:
