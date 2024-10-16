@@ -42,7 +42,8 @@ class PS2(object):
 		"""
 		ps2check = i2c.readdata(i2c.ps2_address, 0x01)		# 获取PS2返回的模式值
 		read_key = i2c.readdata(i2c.ps2_address, 0x03)		# 获取PS2返回的按键值
-		read_key1 = i2c.readdata(i2c.ps2_address, 0x04)  	# 获取PS2返回的按键值
+		read_key1 = i2c.read
+		data(i2c.ps2_address, 0x04)  	# 获取PS2返回的按键值
 		cfg.PS2_READ_KEY = 0
 		if ps2check == 0x41 or ps2check == 0xC1 or ps2check == 0x73 or ps2check == 0xF3:		# PS2普通模式
 			if read_key == 0xef:

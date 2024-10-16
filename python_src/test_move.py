@@ -99,7 +99,11 @@ class RobotDirection(object):
 
 go = RobotDirection()
 
-go.forward_with_angle(80, 0)
+go.forward_with_angle(50, 100)
+time.sleep(0.6)
+go.forward_with_angle(75, -20)
 # go.reverse(100)
+time.sleep(5)
+go.forward_with_angle(50,-100)
 time.sleep(1)
 go.stop()

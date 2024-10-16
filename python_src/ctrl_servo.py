@@ -14,12 +14,15 @@ i2c = I2c()
 class CTRL_Servo():
     def __init__(self):
 
-        self.INIT_ANGLES = [130, 290, 65, 130]
+        self.INIT_ANGLES = [130, 290, 65, 140]
 
-        self.NOW_ANGLES = [130, 290, 65, 130]
+        self.NOW_ANGLES = [130, 290, 65, 140]
 
         self.OPENED_CLAW_ANGLE = 140
         self.CLOSED_CLAW_ANGLE = 160
+
+        self.ROTATED_S3 = 155
+        self.NOT_ROTATED_S3 = 65
 
         self.HIGH_S1 = 130 # init pose
         self.HIGH_S2 = 290 # init pose
@@ -59,11 +62,6 @@ class CTRL_Servo():
         buf = [0xff, 0x01, 4, angle, 0xff]  # соответствует S4 проводу (клешня)
         i2c.writedata(i2c.mcu_address, buf)
         self.NOW_ANGLES[3] = angle
-
-    def set_s7(self,angle):
-        buf = [0xff, 0x01, 7, angle, 0xff]  # соответствует S4 проводу (клешня)
-        i2c.writedata(i2c.mcu_address, buf)
-        self.NOW_ANGLES[3] = angle
     
     def set_angles(self, angles):
         self.set_s1(angles[0])
@@ -76,9 +74,9 @@ class CTRL_Servo():
 
     def set_claw(self,state):
         if state:
-            self.set_s4(self.OPENED_CLAW_ANGLE)
-        else:
             self.set_s4(self.CLOSED_CLAW_ANGLE)
+        else:
+            self.set_s4(self.OPENED_CLAW_ANGLE)
 
     def high_pose(self):
         self.set_s1(self.HIGH_S1)
@@ -120,12 +118,11 @@ class CTRL_Servo():
             time.sleep(0.05)
 
     def take_cube(self):
-        self.set_claw(True)
-        self.high_pose()
+        self.standart_pose()
         time.sleep(0.5)
         self.middle_pose()
         time.sleep(0.5)
-        self.set_claw(False)
+        self.set_claw(True)
         time.sleep(0.5)
         self.set_s1(self.HIGH_S1)
         time.sleep(0.5)
@@ -134,8 +131,8 @@ class CTRL_Servo():
         self.high_pose()
 
     def push_button(self):
-        self.set_claw(False)
-        self.set_s3(65+90)
+        self.set_claw(True)
+        self.set_s3(self.ROTATED_S3)
         self.high_pose()
         time.sleep(0.5)
         self.gently_change([self.HIGH_S1-50, self.HIGH_S2+90, False, False])
@@ -153,12 +150,16 @@ class CTRL_Servo():
 
 
 control_s = CTRL_Servo()
+control_s.push_button()
+time.sleep(1)
+control_s.standart_pose()
+# time.sleep(1)
 
-control_s.set_s7(50)
 # control_s.take_cube()
+time.sleep(1)
 # time.sleep(2)
-# control_s.set_claw(True)
-# control_s.push_button()
+# control_s.set_claw(False)
+# control_s.high_pose()
 # control_s.high_pose()
 
 

@@ -1,4 +1,3 @@
-Dmitriy, [10/15/24 5:20 PM]
 from xr_i2c import I2c
 import time
 
@@ -134,7 +133,7 @@ class CTRL_Servo():
         time.sleep(0.5)
         self.high_pose()
 
-Dmitriy, [10/15/24 5:20 PM]
+
 def push_button(self):
         self.set_claw(False)
         self.set_s3(65+90)

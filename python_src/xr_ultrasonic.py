@@ -186,5 +186,8 @@ class Ultrasonic(object):
 # 		break
 
 i2c = I2c()
-buf = [0xff, 0x01, 8, 150, 0xff]  # соответствует S7 проводу (УЗ)
+buf = [0xff, 0x01, 7, 0, 0xff]  # соответствует S7 проводу (УЗ)
+i2c.writedata(i2c.mcu_address, buf)
+time.sleep(1)
+buf = [0xff, 0x01, 7, 180, 0xff]  # соответствует S7 проводу (УЗ)
 i2c.writedata(i2c.mcu_address, buf)
