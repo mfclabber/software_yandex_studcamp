@@ -35,7 +35,7 @@ def calculate_steering_angle(current_position, target_position, K1, K2):
     error_a = (target_position[0] - current_position[0])*3.14/4
     error_r = (target_position[1] - current_position[1])
 
-    steering_angle = K1 * error_r * np.cos(error_a) + K2 * error_a
+    steering_angle = K1 * error_r * np.cos(error_a) * np.sin(error_a) + K2 * error_a
 
     steering_angle = max(-100, min(100, steering_angle))
 
@@ -45,6 +45,9 @@ def calculate_steering_angle(current_position, target_position, K1, K2):
 def calculate_speed(current_position, target_position, K1):
     error_a = (target_position[0] - current_position[0])*3.14/4
     error_r = (target_position[1] - current_position[1])
+
+    print("ERRORS:")
+    print("ANGLE:",error_a,"DISTANCE: ",error_r)
 
     speed = K1 * error_r * np.cos(error_a)
 

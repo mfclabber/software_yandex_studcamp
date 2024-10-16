@@ -150,8 +150,8 @@ class CTRL_Servo():
 
 
 control_s = CTRL_Servo()
-control_s.push_button()
-time.sleep(1)
+# control_s.push_button()
+# time.sleep(1)
 control_s.standart_pose()
 # time.sleep(1)
 
