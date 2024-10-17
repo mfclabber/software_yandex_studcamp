@@ -16,8 +16,11 @@ led = LED()
 
 import xr_config as cfg
 
-# while True:
-#     led.rainbow(3)
+from xr_ultrasonic import Ultrasonic
+
+ult = Ultrasonic()
+ult.get_distance()
+    #led.rainbow(3)
 #     # for i in range(1, 3):
 #     #     led.epilepsy(i)
 car_light.set_ledgroup(cfg.POWER_LIGHT, 8, cfg.COLOR['black'])

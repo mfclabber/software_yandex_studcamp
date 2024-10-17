@@ -41,7 +41,7 @@ def calculate_steering_angle(current_position, target_position, K1, K2):
 
     return steering_angle
 
-# Контроллер для скорости (например, постоянная)
+
 def calculate_speed(current_position, target_position, K1):
     error_a = (target_position[0] - current_position[0])*3.14/4
     error_r = np.linalg.norm(target_position - current_position)
@@ -66,7 +66,7 @@ frame_count = 0
 fps_count = 0
 start_time = time.time()
 fps = 0 
-print("YOLOv8 RUN!!!")
+print("SERVER RUN")
 
 # Параметры контроллера
 K1 = 140

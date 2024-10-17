@@ -182,10 +182,11 @@ class Ultrasonic(object):
 	def rotate_sensor_r(self):
 		servo.set(7, 180)
 
-# us = Ultrasonic()
-# us.rotate_sensor_l()
-# time.sleep(2)
-# us.rotate_sensor_r()
+us = Ultrasonic()
+us.rotate_sensor_l()
+time.sleep(2)
+us.rotate_sensor_r()
+time.sleep(2)
 
 # ult = Ultrasonic()
 # time_1 = 0
