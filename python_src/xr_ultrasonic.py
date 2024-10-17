@@ -176,11 +176,16 @@ class Ultrasonic(object):
 			go.stop()
 			time.sleep(0.1)
 
-	def rotate_sensor_l():
-		servo.set(5, 0)
+	def rotate_sensor_l(self):
+		servo.set(7, 0)
 
-	def rotate_sensor_r():
-		servo.set(5, 180)
+	def rotate_sensor_r(self):
+		servo.set(7, 180)
+
+# us = Ultrasonic()
+# us.rotate_sensor_l()
+# time.sleep(2)
+# us.rotate_sensor_r()
 
 # ult = Ultrasonic()
 # time_1 = 0
@@ -191,9 +196,9 @@ class Ultrasonic(object):
 # 	if time_1 > 10:
 # 		break
 
-i2c = I2c()
-buf = [0xff, 0x01, 7, 0, 0xff]  # соответствует S7 проводу (УЗ)
-i2c.writedata(i2c.mcu_address, buf)
-time.sleep(1)
-buf = [0xff, 0x01, 7, 180, 0xff]  # соответствует S7 проводу (УЗ)
-i2c.writedata(i2c.mcu_address, buf)
+# i2c = I2c()
+# buf = [0xff, 0x01, 7, 0, 0xff]  # соответствует S7 проводу (УЗ)
+# i2c.writedata(i2c.mcu_address, buf)
+# time.sleep(1)
+# buf = [0xff, 0x01, 7, 180, 0xff]  # соответствует S7 проводу (УЗ)
+# i2c.writedata(i2c.mcu_address, buf)

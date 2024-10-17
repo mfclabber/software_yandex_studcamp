@@ -16,10 +16,12 @@ led = LED()
 
 import xr_config as cfg
 
-while True:
-
-    led.rainbow(1)
-    # car_light.set_ledgroup(cfg.POWER_LIGHT, 8, cfg.COLOR['green'])  # 设置电量灯条为绿色
+# while True:
+#     led.rainbow(3)
+#     # for i in range(1, 3):
+#     #     led.epilepsy(i)
+car_light.set_ledgroup(cfg.POWER_LIGHT, 8, cfg.COLOR['black'])
+car_light.set_ledgroup(cfg.CAR_LIGHT, 8, cfg.COLOR['black'])
     #time.sleep(1)
     # car_light.set_ledgroup(cfg.POWER_LIGHT, 6, cfg.COLOR['orange'])
     # time.sleep(5)

@@ -42,8 +42,7 @@ class PS2(object):
 		"""
 		ps2check = i2c.readdata(i2c.ps2_address, 0x01)		# 获取PS2返回的模式值
 		read_key = i2c.readdata(i2c.ps2_address, 0x03)		# 获取PS2返回的按键值
-		read_key1 = i2c.read
-		data(i2c.ps2_address, 0x04)  	# 获取PS2返回的按键值
+		read_key1 = i2c.readdata(i2c.ps2_address, 0x04)  	# 获取PS2返回的按键值
 		cfg.PS2_READ_KEY = 0
 		if ps2check == 0x41 or ps2check == 0xC1 or ps2check == 0x73 or ps2check == 0xF3:		# PS2普通模式
 			if read_key == 0xef:
@@ -71,7 +70,7 @@ class PS2(object):
 		"""
 
 		read_ps2 = self.ps2_button()           # 获取按键值
-		add = 5
+
 		if cfg.PS2_LASTKEY != read_ps2 and cfg.PS2_LASTKEY != 0:		# 如果上一次的值不是0并且不等于这次的值，说明按键值有变化并且不为0
 			go.stop()		# 按键值有变化时执行一次有且一次停止
 			#cfg.LIGHT_STATUS = cfg.STOP		# 将按键状态设置为停止
@@ -80,24 +79,25 @@ class PS2(object):
 		else:
 			if read_ps2 == cfg.PS2_KEY['PSB_PAD_UP']:  # 等于左侧按键上键
 				go.forward()
-				time.sleep(0.02)
+				time.sleep(0.1)
 				cfg.PS2_LASTKEY = read_ps2	 # 更新上一次的值
 
 			elif read_ps2 == cfg.PS2_KEY['PSB_PAD_DOWN']:  # 等于左侧按键下键
-				go.back()
-				time.sleep(0.02)
-				cfg.PS2_LASTKEY = read_ps2
+				# go.back()
+				# time.sleep(0.1)
+				# cfg.PS2_LASTKEY = read_ps2
+				pass
 
 			elif read_ps2 == cfg.PS2_KEY['PSB_PAD_LEFT']:  # 等于左侧按键左键
 				go.left()
 				#cfg.LIGHT_STATUS = cfg.TURN_LEFT
-				time.sleep(0.02)
+				time.sleep(1)
 				cfg.PS2_LASTKEY = read_ps2
 
 			elif read_ps2 == cfg.PS2_KEY['PSB_PAD_RIGHT']:  # 等于左侧按键右键
 				go.right()
 				#cfg.LIGHT_STATUS = cfg.TURN_RIGHT
-				time.sleep(0.02)
+				time.sleep(1)
 				cfg.PS2_LASTKEY = read_ps2
 
 			# if read_ps2 == cfg.PS2_KEY['PSB_RED']:  # 等于红色按键
@@ -114,8 +114,9 @@ class PS2(object):
 				# else:
 				# 	cfg.ANGLE[6] = 0
 				# servo.set(7, cfg.ANGLE[6])
-				servo_func.getup_object()
-				time.sleep(0.5)
+				#servo_func.getup_object()
+				#time.sleep(0.5)
+				pass
 			elif read_ps2 == cfg.PS2_KEY['PSB_GREEN']:  # 等于绿色按键
 				# # print('PSB_GREEN')
 				# if (cfg.ANGLE[7] - add) < 155:

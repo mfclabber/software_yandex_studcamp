@@ -14,7 +14,7 @@ class LED():
 
     # Выставление цвета для одного светодиода
     def set_led(self, group, num, color):
-           if 0 < num < 9 and 0 < group < 3 and color < 9:
+        if 0 < num < 9 and 0 < group < 3 and color < 9:
             buf = [0xff, group + 3, num, color, 0xff]
             i2c.writedata(i2c.mcu_address, buf)
             time.sleep(0.005)
@@ -46,17 +46,25 @@ class LED():
     def rainbow(self, count):
         match count:
             case 1:
-                for i in range(1,9):
-                    self.set_led(cfg.POWER_LIGHT, i, cfg.COLOR[i])
-                    time.sleep(0.1)
+                self.set_led(cfg.POWER_LIGHT, 1, cfg.COLOR[list(cfg.COLOR.keys())[1]])
+                time.sleep(0.001)
+                for i in range(2,9):
+                    self.set_led(cfg.POWER_LIGHT, i-1, cfg.COLOR['black'])
+                    self.set_led(cfg.POWER_LIGHT, i, cfg.COLOR[list(cfg.COLOR.keys())[i]])
+                    time.sleep(0.001)
+                self.set_led(cfg.POWER_LIGHT, 8, cfg.COLOR['black'])    
             case 2:
-                for i in range(1,9):
-                    self.set_led(cfg.CAR_LIGHT, i, cfg.COLOR[i])
-                    time.sleep(0.12)
+                self.set_led(cfg.CAR_LIGHT, 1, cfg.COLOR[list(cfg.COLOR.keys())[1]])
+                time.sleep(1)
+                for i in range(2,9):
+                    self.set_led(cfg.CAR_LIGHT, i-1, cfg.COLOR['black'])
+                    self.set_led(cfg.CAR_LIGHT, i, cfg.COLOR[list(cfg.COLOR.keys())[i]])
+                    time.sleep(1)
+                self.set_led(cfg.CAR_LIGHT, 8, cfg.COLOR['black'])
             case _:
                 for i in range(1,9):
-                    self.set_led(cfg.POWER_LIGHT, i, cfg.COLOR[i])
-                    self.set_led(cfg.CAR_LIGHT, i, cfg.COLOR[i])
+                    self.set_led(cfg.POWER_LIGHT, i, cfg.COLOR[list(cfg.COLOR.keys())[i]])
+                    self.set_led(cfg.CAR_LIGHT, i, cfg.COLOR[list(cfg.COLOR.keys())[i]])
                     time.sleep(0.12)
     
     # Берегите глаза
@@ -68,11 +76,11 @@ class LED():
                         self.set_led(cfg.POWER_LIGHT, i, cfg.COLOR['white'])
                     else:
                         self.set_led(cfg.POWER_LIGHT, i, cfg.COLOR['black'])
-                time.sleep(0.05)    
+                time.sleep(0.0000000001)    
             case 2:
                 for i in range(1, 9):
                     if i % 2 == 0:
                         self.set_led(cfg.POWER_LIGHT, i, cfg.COLOR['black'])
                     else:
                         self.set_led(cfg.POWER_LIGHT, i, cfg.COLOR['white'])
-                time.sleep(0.05)
+                time.sleep(0.0000000001)

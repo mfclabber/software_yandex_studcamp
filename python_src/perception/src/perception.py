@@ -42,8 +42,8 @@ class Perception():
             
         self.dist_coeffs = np.array([-0.19424606, -0.15660945, -0.00413803, -0.00207618,  0.18147172])
 
-        width = 0.05
-        height = 0.05
+        width = 0.04
+        height = 0.04
 
         self.object_points = np.array([
             [-width / 2, -height / 2, 0],
@@ -225,6 +225,7 @@ class Perception():
 
             # # Применение маски к каналу яркости (Value)
             # hsv_image[:, :, 2] = (hsv_image[:, :, 2] * (1 - 0.5 * mask)).astype(np.uint8)
+            # frame = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
 
             # # Преобразование обратно в BGR
             # corrected_image = cv2.cvtColor(frame, cv2.COLOR_HSV2BGR)

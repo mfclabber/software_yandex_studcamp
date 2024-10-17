@@ -13,7 +13,7 @@ go = RobotDirection()
 
 # if __name__ == "main":
 path2model_weight = pathlib.Path("/home/itmo/software_yandex_studcamp/python_src/perception/weights/main_model_weights.pt")
-print("YOLO RUN")
+
 perception = Perception(path2weights=path2model_weight)
 # received_event = threading.Event() 
 # for first testing
@@ -33,21 +33,21 @@ perception = Perception(path2weights=path2model_weight)
 
 def calculate_steering_angle(current_position, target_position, K1, K2):
     error_a = (target_position[0] - current_position[0])*3.14/4
-    error_r = (target_position[1] - current_position[1])
+    error_r = np.linalg.norm(target_position - current_position)
 
     steering_angle = K1 * error_r * np.cos(error_a) * np.sin(error_a) + K2 * error_a
 
-    steering_angle = max(-100, min(100, steering_angle))
+    steering_angle = max(-100, min(100, steering_angle)) + 5
 
     return steering_angle
 
 # Контроллер для скорости (например, постоянная)
 def calculate_speed(current_position, target_position, K1):
     error_a = (target_position[0] - current_position[0])*3.14/4
-    error_r = (target_position[1] - current_position[1])
+    error_r = np.linalg.norm(target_position - current_position)
 
-    print("ERRORS:")
-    print("ANGLE:",error_a,"DISTANCE: ",error_r)
+    #print("ERRORS")
+    # print("ANGLE:",error_a,"DISTANCE: ",error_r)
 
     speed = K1 * error_r * np.cos(error_a)
 
@@ -69,8 +69,8 @@ fps = 0
 print("YOLOv8 RUN!!!")
 
 # Параметры контроллера
-K1 = 50
-K2 = 10
+K1 = 140
+K2 = 30
 Kd = 0.1
 dt = 0.1
 
@@ -83,17 +83,28 @@ position_with_label = np.array([0.0, 0.0])
 try:
     while True:
         ret, frame = cap.read()
-        channels = cv2.split(frame)
+        # Преобразование в цветовую модель YUV
+        # yuv_img = cv2.cvtColor(frame, cv2.COLOR_BGR2YUV)
 
-        equalized_channels = []
-        for channel in channels:
-            equalized_channels.append(cv2.equalizeHist(channel))
+        # # Выравнивание гистограммы только по яркостному каналу (Y)
+        # yuv_img[:, :, 0] = cv2.equalizeHist(yuv_img[:, :, 0])
 
-        frame = cv2.merge(equalized_channels)
-        lab_img = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
+        # # Преобразование обратно в BGR
+        # frame= cv2.cvtColor(yuv_img, cv2.COLOR_YUV2BGR)
 
-        lab_img[:, :, 1] = cv2.add(lab_img[:, :, 1], 5)
-        frame = cv2.cvtColor(lab_img, cv2.COLOR_LAB2BGR)
+        # height, width = frame.shape[:2]
+        # mask = np.zeros((height, width), dtype=np.float32)
+
+        # # Верхняя часть затемнена, нижняя - без изменений (градиентная маска)
+        # for i in range(height):
+        #     mask[i, :] = i / height
+
+        # # Преобразование изображения в HSV для работы с яркостью
+        # hsv_image = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+        # # Применение маски к каналу яркости (Value)
+        # hsv_image[:, :, 2] = (hsv_image[:, :, 2] * (1 - 0.5 * mask)).astype(np.uint8)
+        # frame = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
 
         if not ret:
             print("Не удалось получить кадр")
@@ -101,12 +112,12 @@ try:
 
         frame_count += 1
 
-        if frame_count % 1 == 0:
+        if frame_count % 10 == 0:
+
+            go.stop()
+
             image, target, positions_in_world, distances = perception.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 
-            # Получаем позиции нужных кнопок
-            # if len(target) != 0:
-                # print()
             non_zero_indices = ((target['labels'] == 0.) | (target['labels'] == 1.) | (target['labels'] == 2.) | (target['labels'] == 3.)).nonzero(as_tuple=True)
             print(non_zero_indices)
             if non_zero_indices[0].numel() > 0:  # Используем numel() для проверки наличия элементов
@@ -117,7 +128,7 @@ try:
                 bbox_with_label = target['bboxes'][label_index]
                 score_with_label = target['scores'][label_index]
                 position_with_label = positions_in_world[label_index]
-                print(f"DISTANCE {distances[label_index]}\n")
+                # print(f"DISTANCE {distances[label_index]}\n")
                 # if distances[label_index] < 22:
                 #     break   
 
@@ -137,17 +148,22 @@ try:
             # time.sleep(0.01)
             print(target)
             print(positions_in_world)
-
-        fps_count += 1 
+            
 
         steering_angle = calculate_steering_angle(current_position, position_with_label, K1, K2)
         speed = calculate_speed(current_position, position_with_label, K1)
         print(steering_angle, speed)
-        # go.forward_with_angle(speed, steering_angle)
+
+            # cv2.imwrite("image.png", cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+
+        fps_count += 1 
+        # print(f"FPS {fps}\n")
+        go.forward_with_angle(speed, steering_angle)
+
+
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-        cv2.imwrite("image.png", image)
 
     cap.release()
     # cv2.destroyAllWindows()
