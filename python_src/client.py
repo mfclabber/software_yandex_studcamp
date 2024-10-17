@@ -7,6 +7,7 @@ from perception.src.perception import Perception
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.connect(('192.168.2.217', 10000))
+client_socket.listen(1)
 
 frame_count = 0
 fps_count = 0

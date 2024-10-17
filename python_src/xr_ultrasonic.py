@@ -181,21 +181,30 @@ class Ultrasonic(object):
 
 	def rotate_sensor_r(self):
 		servo.set(7, 180)
+		
 
 us = Ultrasonic()
 us.rotate_sensor_l()
 time.sleep(2)
 us.rotate_sensor_r()
 time.sleep(2)
+us.rotate_sensor_l()
+time.sleep(2)
+us.rotate_sensor_r()
+time.sleep(2)
+us.rotate_sensor_l()
+time.sleep(2)
+us.rotate_sensor_r()
+time.sleep(2)
 
-# ult = Ultrasonic()
-# time_1 = 0
-# while True:
-# 	time_1 += 1
-# 	print(ult.get_distance())
-# 	time.sleep(1)
-# 	if time_1 > 10:
-# 		break
+ult = Ultrasonic()
+time_1 = 0
+while True:
+	time_1 += 1
+	print(ult.get_distance())
+	time.sleep(1)
+	if time_1 > 10:
+		break
 
 # i2c = I2c()
 # buf = [0xff, 0x01, 7, 0, 0xff]  # соответствует S7 проводу (УЗ)

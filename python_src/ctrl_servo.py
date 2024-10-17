@@ -147,18 +147,26 @@ class CTRL_Servo():
         self.set_pose(self.HIGH_S1-50, self.HIGH_S2+90)
         time.sleep(0.5)
 
+    def drop_object(self):
+        self.set_pose(self.HIGH_S1, self.HIGH_S2)
+        time.sleep(0.5)
+        self.set_pose(self.HIGH_S1-40, self.HIGH_S2+60)
+        time.sleep(0.5)
+        self.set_claw(False)
+
 
 
 control_s = CTRL_Servo()
 #control_s.push_button()
-time.sleep(1)
-control_s.standart_pose()
-#time.sleep(1)
-
 control_s.take_cube()
 time.sleep(1)
+control_s.standart_pose()
+time.sleep(1)
+
+control_s.drop_object()
+# time.sleep(1)
 # time.sleep(2)
-control_s.set_claw(False)
+# control_s.set_claw(False)
 # control_s.high_pose()
 # control_s.high_pose()
 

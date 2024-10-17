@@ -6,25 +6,16 @@ import threading
 from threading import Timer
 from subprocess import call
 
-from xr_car_light import Car_light
-
-car_light = Car_light()
 
 from led_function import LED
-
 led = LED()
 
 import xr_config as cfg
-
-from xr_ultrasonic import Ultrasonic
-
-ult = Ultrasonic()
-ult.get_distance()
-    #led.rainbow(3)
+#led.rainbow(3)
 #     # for i in range(1, 3):
 #     #     led.epilepsy(i)
-car_light.set_ledgroup(cfg.POWER_LIGHT, 8, cfg.COLOR['black'])
-car_light.set_ledgroup(cfg.CAR_LIGHT, 8, cfg.COLOR['black'])
+led.set_ledgroup(cfg.POWER_LIGHT, 8, cfg.COLOR['black'])
+led.set_ledgroup(cfg.CAR_LIGHT, 8, cfg.COLOR['black'])
     #time.sleep(1)
     # car_light.set_ledgroup(cfg.POWER_LIGHT, 6, cfg.COLOR['orange'])
     # time.sleep(5)

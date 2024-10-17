@@ -6,16 +6,17 @@ import threading
 from threading import Timer
 from subprocess import call
 
-from xr_car_light import Car_light
-
-car_light = Car_light()
-
 from led_function import LED
-
 led = LED()
+from xr_power import Power
+pw = Power()
 
-while True:
-    led.red_team()
-    #car_light.init_led()
-    #car_light.set_color_car_light('green')
-    time.sleep(5)
+#led.red_team_both_led()
+led.show_vol()
+time.sleep(1)
+# led.red_team_first_led()
+#led.red_team_second_led()
+led.off_both_led()
+
+# while True:
+#     pw.show_vol()

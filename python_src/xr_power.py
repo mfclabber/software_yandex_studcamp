@@ -68,20 +68,3 @@ class Power():
 			rgb.set_ledgroup(cfg.POWER_LIGHT, 1, cfg.COLOR['red'])
 			cfg.POWER = 0		# 电量档位值设置为0
 
-	def rainbow(self):
-		self.set_led(cfg.POWER_LIGHT, 1, cfg.COLOR['red'])
-		time.sleep(0.12)
-		self.set_led(cfg.POWER_LIGHT, 2, cfg.COLOR['orange'])
-		time.sleep(0.12)
-		self.set_led(cfg.POWER_LIGHT, 3, cfg.COLOR['yellow'])
-		time.sleep(0.12)
-		self.set_led(cfg.POWER_LIGHT, 4, cfg.COLOR['green'])
-		time.sleep(0.12)
-		self.set_led(cfg.POWER_LIGHT, 5, cfg.COLOR['Cyan'])
-		time.sleep(0.12)
-		self.set_led(cfg.POWER_LIGHT, 6, cfg.COLOR['blue'])
-		time.sleep(0.12)
-		self.set_led(cfg.POWER_LIGHT, 7, cfg.COLOR['violet'])
-		time.sleep(0.12)
-		self.set_led(cfg.POWER_LIGHT, 8, cfg.COLOR['white'])
-		time.sleep(0.12)

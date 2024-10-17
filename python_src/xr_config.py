@@ -26,8 +26,8 @@ CRUISING_SET = {'normal': 0, 'irfollow': 1, 'trackline': 2, 'avoiddrop': 3, 'avo
 		 'maze': 6, 'camera_normal': 7, 'camera_linepatrol': 8, 'facefollow':9, 'colorfollow':10, 'qrcode_detection':11}
 CAMERA_MOD_SET = {'camera_normal': 0, 'camera_linepatrol': 1, 'facefollow':2, 'colorfollow':3, 'qrcode_detection':4}
 
-ANGLE_MAX = 160  # Максимальный угол сервопривода, предотвращающий блокировку, можно установить значение меньше 180
-ANGLE_MIN = 15  # Минимальный угол сервопривода, предотвращающий блокировку, можно установить значение больше 0
+ANGLE_MAX = 180  # Максимальный угол сервопривода, предотвращающий блокировку, можно установить значение меньше 180 (было 165)
+ANGLE_MIN = 0  # Минимальный угол сервопривода, предотвращающий блокировку, можно установить значение больше 0 (было 15)
 
 VOICE_MOD = 0
 VOICE_MOD_SET = {'normal': 0, 'openlight': 1, 'closelight': 2, 'forward': 3, 'back': 4, 'left': 5,
