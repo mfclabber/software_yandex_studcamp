@@ -6,7 +6,7 @@ led = LED()
 
 # Функция для запуска первого скрипта
 def run_script_1():
-    subprocess.run(['python3', 'power_led.py'])
+    subprocess.run(['python3', 'BUZZER.py'])
 
 # Функция для запуска второго скрипта
 def run_script_2():

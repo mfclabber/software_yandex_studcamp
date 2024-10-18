@@ -20,7 +20,7 @@ pw = Power()
 # led.red_team_first_led()
 #led.red_team_second_led()
 #led.red_team_both_led()
-led.off_both_led()
+#led.off_both_led()
 #led.rainbow(1)
 # while True:
 #     pw.show_vol()

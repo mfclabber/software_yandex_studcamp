@@ -185,12 +185,13 @@ class Ultrasonic(object):
 
 
 # ult = Ultrasonic()
+# ult.rotate_sensor_r()
 # time_1 = 0
 # while True:
 # 	time_1 += 1
 # 	print(ult.get_distance())
 # 	time.sleep(1)
-# 	if time_1 > 10:
+# 	if time_1 > 20:
 # 		break
 
 # i2c = I2c()

@@ -1,4 +1,5 @@
 from builtins import float, object
+from xr_ultrasonic import Ultrasonic
 
 import os
 import time
@@ -119,14 +120,87 @@ class RobotDirection(object):
 			
 		self.m3m4_forward() # left? 
 		self.m1m2_forward() # right? 
+	
+	def follow_till_wall(self,dist,s,ul):
+		n = 5
+		speed = 40
 
-go = RobotDirection()
+		arr = [ul.get_distance() for i in range(n)]
+		m = sum(arr)/n
 
-go.forward_with_angle(50, 100)
-time.sleep(1)
+		if s=="l":
+			ul.rotate_sensor_l()
+		else:
+			ul.rotate_sensor_r()
+
+		while m > dist+20:
+			self.forward_with_angle(speed,0)
+			arr.append(ul.get_distance())
+			m += arr[-1]/n
+			m -= arr.pop(0)/n
+		
+		print("Wall is found!")
+
+		self.stop()
+
+	def follow_wall(self,dist,s,ul):
+		n = 5
+		kp = 0.5
+		kd = 5
+		speed = 40
+		angle_lim = 20
+
+		if s == "r":
+			kp = -kp
+			kd = -kd
+		
+		self.follow_till_wall(dist,s,ul)
+
+		arr = [ul.get_distance() for i in range(n)]
+		m = sum(arr)/n
+		diff = [arr[i+1]-arr[i] for i in range(n-1)]
+		diff.append (diff[-1])
+		m_d = sum(diff)/n
+
+		# flag1, flag2 = 0,0
+		# sign = 1
+		# change_state = 0
+		while (abs(m_d)<5):
+			print(abs(m_d))
+			error_correct = (dist-m)*kp+m_d*kd
+			err = max(-angle_lim, min(error_correct,angle_lim))
+
+			# if m>50 and flag1==0:
+			# 	flag1 = 1
+			# if m<=50 and flag1==1:
+			# 	flag1 = 0
+			# if flag1 != flag2:
+			# 	change_state +=1
+			# 	flag1=flag2
+			# if change_state % 4 == 0:
+			# 	sign = sign*-1
+
+			self.forward_with_angle(speed,err)
+			print("angle:", round(err),"dist:",m )
+			new_d = ul.get_distance()
+			if new_d == -1:
+				pass
+			arr.append(new_d)
+			m += arr[-1]/n
+			m -= arr.pop(0)/n
+			diff.append(arr[-1]-arr[-2])
+			m_d += diff[-1]/n
+			m_d -= diff.pop(0)/n
+		self.stop()
+		print(m_d, m)
+		#print(arr, diff)
+		#print("stopped")
+
+# go.forward_with_angle(30, 0)
+# time.sleep(1)
 # go.forward_with_angle(75, -20)
 # # go.reverse(100)
 # time.sleep(5)
 # go.forward_with_angle(50,-100)
 # time.sleep(1)
-go.stop()
+# go.stop()

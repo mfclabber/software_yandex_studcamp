@@ -61,13 +61,13 @@ fps = 0
 print("SERVER RUN")
 
 # Параметры контроллера
-K1 = 80
-K2 = 120
+K1 = 60
+K2 = 100
 
 
 try:
     while True:
-        # go.stop
+        # go.stop()
         ret, frame = cap.read()
 
         if not ret:
@@ -85,8 +85,6 @@ try:
             break
         size = int.from_bytes(data_size, byteorder='big')
 
-        # data2 = client_socket.recv(size)
-
         data2 = bytearray()
         while len(data2) < size:
             packet = client_socket.recv(size - len(data2))
@@ -98,20 +96,27 @@ try:
 
         position_with_label = pickle.loads(data2)
 
-        steering_angle = calculate_steering_angle(current_position, position_with_label, K1, K2)
-        speed = calculate_speed(current_position, position_with_label, K1)
-        print(steering_angle, speed)
+        if type(position_with_label) == int:
+            steering_angle = 10
+            speed = 0
+        else:
+            steering_angle = calculate_steering_angle(current_position, position_with_label, K1, K2)
+            speed = calculate_speed(current_position, position_with_label, K1)
+            print(steering_angle, speed)
 
-        fps_count += 1 
+        #fps_count += 1 
 
         # if abs(steering_angle) > 50 and speed < 30:
         #     speed += 10
 
         # print(f"FPS {fps}\n")
         go.forward_with_angle(speed, steering_angle)
+        time.sleep(1)
 
     cap.release()
+
 except ...:
+
     go.stop()
     client_socket.close()
     server_socket.close()
@@ -123,12 +128,12 @@ cap.release()
 client_socket.close()
 server_socket.close()
 
-go.forward_with_angle(50, 0)
-time.sleep(0.5)
-go.stop()
+# go.forward_with_angle(50, 0)
+# time.sleep(0.5)
+# go.stop()
 
-control_s.take_cube()
-time.sleep(2)
-control_s.drop_object()
-time.sleep(1)
-control_s.standart_pose()
+# control_s.take_cube()
+# time.sleep(2)
+# control_s.drop_object()
+# time.sleep(1)
+# control_s.standart_pose()
