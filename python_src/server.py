@@ -11,14 +11,95 @@ control_s.standart_pose()
 
 go = RobotDirection()
 
+MIDDLE_X_IMAGE = 320
 
+
+def align_histogram(frame): 
+    frame_rgb = cv2.split(frame) 
+    mean1 = np.mean(frame_rgb) 
+    desired_mean = 60 
+    alpha = mean1 / desired_mean 
+    Inew_RGB = [] 
+    for layer in frame_rgb: 
+        Imin = layer.min() 
+        Imax = layer.max() 
+        Inew = ((layer - Imin) / (Imax - Imin)) ** alpha 
+        Inew_RGB.append(Inew) 
+    Inew = cv2.merge(Inew_RGB) 
+    Inew_1 = (255*Inew).clip(0, 255).astype(np.uint8) 
+    return Inew_1
+
+
+# def calculate_steering_angle(current_position, target_position, K1, K2):
+#     error_a = (target_position[0] - current_position[0])*3.14/4
+#     error_r = np.linalg.norm(target_position - current_position)
+
+#     steering_angle = K1 * error_r * np.cos(error_a) * np.sin(error_a) + K2 * error_a
+#     steering_angle = max(-100, min(100, steering_angle))
+
+#     return steering_angle
+
+
+# def calculate_speed(current_position, target_position, K1):
+#     error_a = (target_position[0] - current_position[0])*3.14/4
+#     error_r = np.linalg.norm(target_position - current_position)
+
+#     #print("ERRORS")
+#     # print("ANGLE:",error_a,"DISTANCE: ",error_r)
+
+#     speed = K1 * error_r * np.cos(error_a)
+#     speed = max(0, min(100, speed))
+ 
+#     return speed
+
+class PIDController:
+    def __init__(self, Kp, Ki, Kd, setpoint=0):
+        self.Kp = Kp  # Пропорциональный коэффициент
+        self.Ki = Ki  # Интегральный коэффициент
+        self.Kd = Kd  # Дифференциальный коэффициент
+        self.setpoint = setpoint  # Желаемая цель (напр., центр кубика)
+
+        self.previous_error = 0  # Ошибка на предыдущем шаге
+        self.integral = 0  # Интегральная сумма ошибок
+        self.last_time = time.time()  # Время последнего вызова
+
+    def update(self, current_value):
+        # Шаг 1: Вычисляем ошибку
+        error = self.setpoint - current_value
+
+        # Шаг 2: Вычисляем разницу времени
+        current_time = time.time()
+        delta_time = current_time - self.last_time
+        delta_error = error - self.previous_error
+
+        # Шаг 3: Пропорциональная составляющая
+        P = self.Kp * error
+
+        # Шаг 4: Интегральная составляющая
+        self.integral += error * delta_time
+        I = self.Ki * self.integral
+
+        # Шаг 5: Дифференциальная составляющая
+        D = 0
+        if delta_time > 0:
+            D = self.Kd * (delta_error / delta_time)
+
+        # Шаг 6: Рассчитываем итоговое значение управления
+        output = P + I + D
+
+        # Шаг 7: Сохраняем предыдущие значения для следующего шага
+        self.previous_error = error
+        self.last_time = current_time
+
+        return output
+    
+pid = PIDController(Kp=1.0, Ki=0.10 Kd=0.05, setpoint=320)
 
 def calculate_steering_angle(current_position, target_position, K1, K2):
-    error_a = (target_position[0] - current_position[0])*3.14/4
-    error_r = np.linalg.norm(target_position - current_position)
+    error_a = target_position - current_position
+    # error_r = np.linalg.norm(target_position - current_position)
 
     steering_angle = K1 * error_r * np.cos(error_a) * np.sin(error_a) + K2 * error_a
-
     steering_angle = max(-100, min(100, steering_angle))
 
     return steering_angle
@@ -33,7 +114,7 @@ def calculate_speed(current_position, target_position, K1):
 
     speed = K1 * error_r * np.cos(error_a)
     speed = max(0, min(100, speed))
-
+ 
     return speed
 
 
@@ -61,8 +142,32 @@ fps = 0
 print("SERVER RUN")
 
 # Параметры контроллера
-K1 = 60
+K1 = 10
 K2 = 100
+
+def find_red_cube(frame):
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    lower_red1 = np.array([0, 70, 50])
+    upper_red1 = np.array([10, 255, 255])
+    lower_red2 = np.array([170, 70, 50])
+    upper_red2 = np.array([180, 255, 255])
+
+    mask1 = cv2.inRange(hsv, lower_red1, upper_red1)
+    mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
+    mask = cv2.bitwise_or(mask1, mask2)
+
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
+
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    if len(contours) > 0:
+        largest_contour = max(contours, key=cv2.contourArea)
+        x, y, w, h = cv2.boundingRect(largest_contour)
+        return (x, y, w, h)
+    else:
+        return None
 
 
 try:
@@ -73,6 +178,9 @@ try:
         if not ret:
             print("Не удалось получить кадр")
             break
+        print(f"FRAME WIDTH: {frame.shape[1]}")
+
+        frame = align_histogram(frame)
 
         _, buffer = cv2.imencode('.jpg', frame)
         data = buffer.tobytes()
@@ -92,7 +200,7 @@ try:
                 break
             data2 += packet
 
-        print("Данные получены")
+        # print(f"{find_red_cube(frame)}")
 
         position_with_label = pickle.loads(data2)
 
@@ -110,8 +218,8 @@ try:
         #     speed += 10
 
         # print(f"FPS {fps}\n")
-        go.forward_with_angle(speed, steering_angle)
-        time.sleep(1)
+        # go.forward_with_angle(speed, steering_angle)
+        # time.sleep(1)
 
     cap.release()
 

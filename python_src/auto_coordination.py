@@ -31,7 +31,7 @@ class Coordinator:
         
         self.go = go
         self.sonic = sonic
-        self.MAX_SONIC_MIDDLE_DIST = 85 #
+        self.MAX_SONIC_MIDDLE_DIST = 120 #
         self.MIN_SONIC_MIDDLE_DIST = 60 #
         self.MIN_SONIC_DIST = 40
 
@@ -89,7 +89,7 @@ class Coordinator:
         self.next_point = self.robot_pos+self.directions[self.robot_dir]
 
 
-    def rotate(self,direction):
+    def rotate_in_graph(self,direction):
         self.robot_dir = (self.robot_dir+direction)%4
         self.next_point = self.robot_pos+self.directions[self.robot_dir]
     
@@ -121,7 +121,7 @@ class Coordinator:
             elif (self.check_r() == (1 in npt_w)) and (self.check_l() == (3 in npt_w)):
                 self.move_in_graph()
                 return True
-            return False
+        return False
     
     def move_forward(self):
         side = 'none'
@@ -131,17 +131,23 @@ class Coordinator:
             elif (i-self.robot_dir)%4 == 3:
                 side = "l"
         if side == 'none':
-            self.go.follow_till_wall(30,side,self.sonic)
+            side_next = 'none'
+            for i in self.field_map[self.next_point[0]][self.next_point[1]].walls:
+                if (i-self.robot_dir)%4 == 1:
+                    side_next = "r"
+                elif (i-self.robot_dir)%4 == 3:
+                    side_next = "l"
+            self.go.follow_till_wall(30,side_next,self.sonic)
         else:
             self.go.follow_wall(30,side,self.sonic)
         
-        self.go.forward_with_angle(30,0)
-        time.sleep(0.5)
+        self.go.forward_with_angle(40,0)
+        time.sleep(1)
         self.go.stop()
         
-        while not self.movement_detector():
-            self.show_field()
-            time.sleep(1)
+        # while not self.movement_detector():
+        #     self.show_field()
+        #     time.sleep(1)
         
             
 
@@ -170,9 +176,8 @@ class Coordinator:
         time.sleep(1)
 
         dist = self.sonic.get_distance()
-        print(dist)
+        print("SONIC:",dist)
         if (dist < self.MAX_SONIC_MIDDLE_DIST) and (dist > self.MIN_SONIC_MIDDLE_DIST):
-            print("!@#$")
             return 1
         return 0
 
@@ -282,20 +287,39 @@ class Coordinator:
 ult = Ultrasonic()
 go = RobotDirection()
 
-coordinator = Coordinator([0,1], 0, [2,4], [0,2], "rg", "mb", [4,0], True,ult,go)
-coordinator.show_field()
-coordinator.move_forward()
+coordinator = Coordinator([0,0], 0, [2,4], [0,2], "rg", "mb", [4,0], False,ult,go)
+
+while True:
+    coordinator.show_field()
+    comm = input()
+    if comm == "m":
+        coordinator.move_forward()
+    elif comm == "e":
+        coordinator.move_in_graph()
+    elif comm == "r":
+        go.forward_with_angle(0,80)
+        time.sleep(0.7)
+        go.stop()
+        coordinator.rotate_in_graph(1)
+    elif comm == "l":
+        go.forward_with_angle(0,-80)
+        time.sleep(0.7)
+        go.stop()
+        coordinator.rotate_in_graph(-1)
+    else:
+        break
+
 time.sleep(2)
-coordinator.move_forward()
+#coordinator.move_forward()
 time.sleep(2)
-coordinator.move_forward()
-# ans = input()
-# while ans!="":
-#     if ans == "m":
-#         coordinator.movement_detector()
-#     elif ans == "r":
-#         coordinator.rotate(1)
-#     elif ans == "l":
-#         coordinator.rotate(-1)
-#     coordinator.show_field()
-#     ans = input()
+#coordinator.move_forward()
+ans = input()
+while ans!="":
+     if ans == "m":
+         coordinator.movement_detector()
+     elif ans == "r":
+         coordinator.rotate(1)
+     elif ans == "l":
+         coordinator.rotate(-1)
+     coordinator.show_field()
+     ans = input()
