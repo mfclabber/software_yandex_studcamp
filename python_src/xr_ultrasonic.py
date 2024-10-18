@@ -58,7 +58,7 @@ class Ultrasonic(object):
 				pass
 			else:
 				print("NO ECHO receive! Please check connection")
-				break
+				return -1
 		t2 = time.time()  # 记录Echo引脚高电平结束时间点
 		distance = (t2 - t1) * 340 / 2 * 100  # Echo引脚高电平持续时间就是超声波由发射到返回的时间，即用时间x声波速度/2等于单程即超声波距物体距离值
 		# t2-t1时间单位s,声波速度340m/s,x100将距离值单位m转换成cm
@@ -69,8 +69,8 @@ class Ultrasonic(object):
 			return cfg.DISTANCE
 		else:
 			# print("distance is 0")  # 如果距离值大于5m,超出检测范围
-			cfg.DISTANCE = 0
-			return 0
+			cfg.DISTANCE = 500
+			return 500
 
 	def avoidbyragar(self):
 		"""
@@ -183,28 +183,15 @@ class Ultrasonic(object):
 		servo.set(7, 180)
 		
 
-us = Ultrasonic()
-us.rotate_sensor_l()
-time.sleep(2)
-us.rotate_sensor_r()
-time.sleep(2)
-us.rotate_sensor_l()
-time.sleep(2)
-us.rotate_sensor_r()
-time.sleep(2)
-us.rotate_sensor_l()
-time.sleep(2)
-us.rotate_sensor_r()
-time.sleep(2)
 
-ult = Ultrasonic()
-time_1 = 0
-while True:
-	time_1 += 1
-	print(ult.get_distance())
-	time.sleep(1)
-	if time_1 > 10:
-		break
+# ult = Ultrasonic()
+# time_1 = 0
+# while True:
+# 	time_1 += 1
+# 	print(ult.get_distance())
+# 	time.sleep(1)
+# 	if time_1 > 10:
+# 		break
 
 # i2c = I2c()
 # buf = [0xff, 0x01, 7, 0, 0xff]  # соответствует S7 проводу (УЗ)

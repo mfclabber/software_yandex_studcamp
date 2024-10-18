@@ -4,6 +4,10 @@ import cv2
 import time
 import numpy as np
 from test_move import RobotDirection
+from ctrl_servo import CTRL_Servo
+
+control_s = CTRL_Servo()
+control_s.standart_pose()
 
 go = RobotDirection()
 
@@ -58,7 +62,7 @@ print("SERVER RUN")
 
 # Параметры контроллера
 K1 = 80
-K2 = 30
+K2 = 120
 
 
 try:
@@ -81,6 +85,8 @@ try:
             break
         size = int.from_bytes(data_size, byteorder='big')
 
+        # data2 = client_socket.recv(size)
+
         data2 = bytearray()
         while len(data2) < size:
             packet = client_socket.recv(size - len(data2))
@@ -88,7 +94,7 @@ try:
                 break
             data2 += packet
 
-        # print("Данные получены")
+        print("Данные получены")
 
         position_with_label = pickle.loads(data2)
 
@@ -98,8 +104,11 @@ try:
 
         fps_count += 1 
 
+        # if abs(steering_angle) > 50 and speed < 30:
+        #     speed += 10
+
         # print(f"FPS {fps}\n")
-        # go.forward_with_angle(speed, steering_angle)
+        go.forward_with_angle(speed, steering_angle)
 
     cap.release()
 except ...:
@@ -113,3 +122,13 @@ cap.release()
 
 client_socket.close()
 server_socket.close()
+
+go.forward_with_angle(50, 0)
+time.sleep(0.5)
+go.stop()
+
+control_s.take_cube()
+time.sleep(2)
+control_s.drop_object()
+time.sleep(1)
+control_s.standart_pose()

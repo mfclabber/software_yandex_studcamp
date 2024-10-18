@@ -1,19 +1,26 @@
 import socket
+import pickle
 import pathlib
-import numpy as np
+
 import cv2
 import time
+import numpy as np
+
 from perception.src.perception import Perception
+
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.connect(('192.168.2.217', 10000))
-client_socket.listen(1)
 
 frame_count = 0
 fps_count = 0
+position_with_label = np.array([0.0, 0.0])
 
-path2model_weight = pathlib.Path("/home/itmo/software_yandex_studcamp/python_src/perception/weights/main_model_weights.pt")
+path2model_weight = pathlib.Path("/home/mfclabber/client_yandex_studcamp/software_yandex_studcamp/python_src/perception/weights/main_model_weights.pt")
 perception = Perception(path2weights=path2model_weight)
+
+start_time = time.time()
+# distances = 
 
 
 while True:
@@ -22,6 +29,8 @@ while True:
     if not data_size:
         break
     size = int.from_bytes(data_size, byteorder='big')
+
+    # data = client_socket.recv(size)
 
     data = bytearray()
     while len(data) < size:
@@ -35,38 +44,61 @@ while True:
 
     frame_count += 1
 
-    if frame_count % 10 == 0:
+    # if frame_count % 10 == 0: 
 
-        image, target, positions_in_world, distances = perception.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    image, target, positions_in_world, distances = perception.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    non_zero_indices = ((target['labels'] == 0.) | (target['labels'] == 0.)).nonzero(as_tuple=True)
+    
 
-        non_zero_indices = ((target['labels'] == 0.) | (target['labels'] == 1.)).nonzero(as_tuple=True)
-        print(non_zero_indices)
-        if non_zero_indices[0].numel() > 0:  # Используем numel() для проверки наличия элементов
-            
-            label_index = non_zero_indices[0][0].item()
+    def calculate_area(bbox):
+        width = bbox[2] - bbox[0]  # x_max - x_min
+        height = bbox[3] - bbox[1]  # y_max - y_min
+        return width * height
 
-            # Используем только если label_index был найден
-            bbox_with_label = target['bboxes'][label_index]
-            score_with_label = target['scores'][label_index]
-            position_with_label = positions_in_world[label_index]
-            # print(f"DISTANCE {distances[label_index]}\n")
-            # if distances[label_index] < 22:
-            #     break   
+    # Вычисляем площади для каждого bbox
+    # areas = np.array([calculate_area(bbox) for bbox in target['bboxes'][non_zero_indices]])
+    # max_area_index = np.argmax(areas)
+    # largest_bbox = target['bboxes'][max_area_index]
 
+
+    if non_zero_indices[0].numel() > 0: 
+
+        areas = np.array([calculate_area(bbox) for bbox in target['bboxes'][non_zero_indices]])
+        max_area_index = np.argmax(areas)
         
-        current_time = time.time()
-        fps = fps_count / (current_time - start_time) if current_time > start_time else 0
+        label_index = non_zero_indices[0][0].item()
+        bbox_with_label = target['bboxes'][label_index]
+        score_with_label = target['scores'][label_index]
+        position_with_label = positions_in_world[max_area_index]
 
-        # cv2.putText(image, f"FPS: {fps:.2f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-        cv2.imshow('YOLOv8 Detection', cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-        # cv2.imwrite('output_image.png', image)
-        # time.sleep(0.01)
+        print(f"DISTANCE {distances[max_area_index]}")
 
-        fps_count = 0
-        start_time = current_time
+        if distances[max_area_index] < 0.19 and 2 in target['labels'] :
+            break   
 
-        print(target)
-        print(positions_in_world)
+    
+    current_time = time.time()
+    fps = fps_count / (current_time - start_time) if current_time > start_time else 0
+
+    # cv2.putText(image, f"FPS: {fps:.2f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    cv2.imshow('YOLOv8 Detection', cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+
+    fps_count = 0
+    start_time = current_time
+    
+
+    # print(target)
+    # print(positions_in_world)
+
+    data2 = pickle.dumps(position_with_label)
+    client_socket.sendall(len(data2).to_bytes(4, byteorder='big'))
+    client_socket.sendall(data2)
+    #client_socket.sendall(positions_in_world)
+
+    print(position_with_label)
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
 
 client_socket.close()
 cv2.destroyAllWindows()

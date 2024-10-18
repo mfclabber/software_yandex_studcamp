@@ -63,32 +63,54 @@ class RobotDirection(object):
 		self.m1m2_stop()
 		self.m3m4_stop()
 
-	def forward_with_angle(self, speed, angle): 
+	# def forward_with_angle(self, speed, angle): 
+		
+	# 	angle = min(100, angle)
+	# 	angle = max(-100, angle)
+		
+	# 	speed2 = np.round(speed * (1 - abs(angle) / 50))
+		
+	# 	if angle > 0: 
+	# 		self.set_speed(2, speed) # left
+	# 		self.set_speed(1, abs(speed2)) # right
+			
+	# 		self.m3m4_reverse() # left? 
+	# 		if speed2>0: 
+	# 			self.m1m2_reverse() # right? 
+	# 		else: 
+	# 			self.m1m2_forward() # right? 
+		
+	# 	else: 
+	# 		self.set_speed(2, abs(speed2)) # left
+	# 		self.set_speed(1, speed) # right
+			
+	# 		self.m1m2_reverse() # right? 
+	# 		if speed2>0: 
+	# 			self.m3m4_reverse() # left? 
+	# 		else: 
+	# 			self.m3m4_forward() # left?
 
+	def forward_with_angle(self, speed, angle): 
+		
 		angle = min(100, angle)
 		angle = max(-100, angle)
 		
-		speed2 = np.round(speed * (1 - abs(angle) / 50))
+		speed_l = max(-100,min(100, speed + angle))
+		speed_r = max(-100,min(100, speed - angle))
+
+		self.set_speed(1, abs(speed_r))
+		self.set_speed(2, abs(speed_l))
 		
-		if angle > 0: 
-			self.set_speed(2, speed) # left
-			self.set_speed(1, abs(speed2)) # right
-			
-			self.m3m4_reverse() # left? 
-			if speed2>0: 
-				self.m1m2_reverse() # right? 
-			else: 
-				self.m1m2_forward() # right? 
+		if speed_l<0:
+			self.m3m4_forward()
+		else:
+			self.m3m4_reverse()
 		
-		else: 
-			self.set_speed(2, abs(speed2)) # left
-			self.set_speed(1, speed) # right
-			
-			self.m1m2_reverse() # right? 
-			if speed2>0: 
-				self.m3m4_reverse() # left? 
-			else: 
-				self.m3m4_forward() # left?
+		if speed_r<0:
+			self.m1m2_forward()
+		else:
+			self.m1m2_reverse()
+
 
 	def reverse(self, speed): 
 
@@ -98,13 +120,13 @@ class RobotDirection(object):
 		self.m3m4_forward() # left? 
 		self.m1m2_forward() # right? 
 
-# go = RobotDirection()
+go = RobotDirection()
 
-# go.forward_with_angle(100, 100)
-# time.sleep(0.6)
+go.forward_with_angle(50, 100)
+time.sleep(1)
 # go.forward_with_angle(75, -20)
 # # go.reverse(100)
 # time.sleep(5)
 # go.forward_with_angle(50,-100)
 # time.sleep(1)
-# go.stop()
+go.stop()

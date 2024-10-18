@@ -48,7 +48,6 @@ class Power():
 		vol = (vol_H << 8) + vol_L  # 高8位和低八位结合, 电池电压放大了100倍
 		return vol  # 返回电池电压
 
-	# def show_vol(self, socket):
 	def show_vol(self):
 		"""
 		RGB灯电量显示
@@ -58,7 +57,7 @@ class Power():
 		if (370 < vol < 430) or (760 < vol < 860) or (1120 < vol < 1290):  # 70-100%  8 led green
 			rgb.set_ledgroup(cfg.POWER_LIGHT, 8, cfg.COLOR['green'])		# 设置电量灯条为绿色
 			cfg.POWER = 3		# 电量档位值设置为最高档3
-		elif (350 < vol < 370) or (720 < vol < 770) or (1080 < vol < 1120):  	# 30-70% 6 led orange
+		elif (350 < vol < 400) or (720 < vol < 770) or (1080 < vol < 1120):  	# 30-70% 6 led orange
 			rgb.set_ledgroup(cfg.POWER_LIGHT, 6, cfg.COLOR['orange'])
 			cfg.POWER = 2		# 电量档位值设置为2
 		elif (340 < vol < 350) or (680 < vol < 730) or (1040 < vol < 1080):  	# 10-30% 2 led green

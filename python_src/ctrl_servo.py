@@ -144,26 +144,67 @@ class CTRL_Servo():
         #time.sleep(0.5)
         self.set_pose(self.HIGH_S1 - 75, self.HIGH_S2 + 80)
         time.sleep(1)
-        self.set_pose(self.HIGH_S1-50, self.HIGH_S2+90)
+        self.set_pose(self.HIGH_S1-60, self.HIGH_S2+90)
         time.sleep(0.5)
 
     def drop_object(self):
         self.set_pose(self.HIGH_S1, self.HIGH_S2)
         time.sleep(0.5)
-        self.set_pose(self.HIGH_S1-40, self.HIGH_S2+60)
+        self.set_pose(self.HIGH_S1, self.HIGH_S2+40)
+        time.sleep(0.5)
+        self.set_pose(self.HIGH_S1-60, self.HIGH_S2+90)
         time.sleep(0.5)
         self.set_claw(False)
+
+    # def heil(self):
+    #     self.set_pose(self.HIGH_S1, self.HIGH_S2)
+    #     time.sleep(0.5)
+    #     self.set_pose(self.HIGH_S1-80, self.HIGH_S2+140)
+    #     time.sleep(0.5)
+    #     # self.set_claw(False)
+
+    def take_ball(self):
+        self.set_pose(self.HIGH_S1, self.HIGH_S2)
+        time.sleep(0.5)
+        self.set_pose(self.HIGH_S1-80, self.HIGH_S2+100)
+        time.sleep(0.5)
+        self.set_pose(self.HIGH_S1-130, self.HIGH_S2+140)
+        time.sleep(0.8)
+        self.set_claw(True)
+        time.sleep(0.5)
+        self.set_pose(self.HIGH_S1-80, self.HIGH_S2+100)
+        time.sleep(0.5)
+        self.set_pose(self.HIGH_S1, self.HIGH_S2)
+        time.sleep(0.5)
+
+    def hit(self):
+        self.set_pose(self.HIGH_S1, self.HIGH_S2)
+        time.sleep(0.5)
+        self.set_claw(True)
+        for i in range(5):
+            self.set_pose(self.HIGH_S1-80, self.HIGH_S2+140)
+            time.sleep(0.3)
+            self.set_pose(self.HIGH_S1, self.HIGH_S2)
+            time.sleep(0.2)
 
 
 
 control_s = CTRL_Servo()
-#control_s.push_button()
-control_s.take_cube()
-time.sleep(1)
-control_s.standart_pose()
-time.sleep(1)
 
-control_s.drop_object()
+control_s.standart_pose()
+#time.sleep(1)
+# control_s.hit()
+
+# control_s.push_button()
+# time.sleep(1)
+# control_s.standart_pose()
+# control_s.take_cube()
+# time.sleep(1)
+# control_s.drop_object()
+# time.sleep(1)
+# control_s.standart_pose()
+
+# control_s.drop_object()
 # time.sleep(1)
 # time.sleep(2)
 # control_s.set_claw(False)

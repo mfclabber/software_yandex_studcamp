@@ -67,18 +67,35 @@ class LED():
 
     def show_vol(self):
         vol = pw.got_vol()
-        if (370 < vol < 430) or (760 < vol < 860) or (1120 < vol < 1290):  # 70-100%  8 led green
-            self.set_ledgroup(cfg.POWER_LIGHT, 8, cfg.COLOR['green'])		# 设置电量灯条为绿色
-            cfg.POWER = 3		# 电量档位值设置为最高档3
-        elif (350 < vol < 370) or (720 < vol < 770) or (1080 < vol < 1120):  	# 30-70% 6 led orange
-            self.set_ledgroup(cfg.POWER_LIGHT, 6, cfg.COLOR['yellow'])
-            cfg.POWER = 2		# 电量档位值设置为2
-        elif (340 < vol < 350) or (680 < vol < 730) or (1040 < vol < 1080):  	# 10-30% 2 led green
+        print(vol)
+        # 70-100%
+        if (417 < vol <= 430) or (835 < vol <= 860) or (1255 < vol <= 1290):  
+            self.set_ledgroup(cfg.POWER_LIGHT, 8, cfg.COLOR['green'])
+            cfg.POWER = 3		#
+        elif (404 < vol <= 417) or (810 < vol <= 835) or (1220 < vol <= 1255):  
+            self.set_ledgroup(cfg.POWER_LIGHT, 7, cfg.COLOR['green'])		
+            cfg.POWER = 3		
+        elif (391 < vol <= 404) or (785 < vol <= 810) or (1185 < vol <= 1220):
+            self.set_ledgroup(cfg.POWER_LIGHT, 6, cfg.COLOR['green'])		
+            cfg.POWER = 3
+        # 30-70% 		
+        elif (378 < vol <= 391) or (760 < vol <= 785) or (1150 < vol <= 1185):  	
+            self.set_ledgroup(cfg.POWER_LIGHT, 5, cfg.COLOR['yellow'])
+            cfg.POWER = 2		
+        elif (365 < vol <= 378) or (735 < vol <= 760) or (1115 < vol <= 1150):  	
+            self.set_ledgroup(cfg.POWER_LIGHT, 4, cfg.COLOR['yellow'])
+            cfg.POWER = 2		
+        elif (352 < vol <= 365) or (710 < vol <= 735) or (1080 < vol <= 1115):
+            self.set_ledgroup(cfg.POWER_LIGHT, 3, cfg.COLOR['yellow'])
+            cfg.POWER = 2
+        # 10-30%		
+        elif (340 < vol <= 352) or (680 < vol <= 710) or (1040 < vol <= 1080):
             self.set_ledgroup(cfg.POWER_LIGHT, 2, cfg.COLOR['red'])
-            cfg.POWER = 1		# 电量档位值设置为1
-        elif (vol < 340) or (vol < 680) or (vol < 1040):  # <10% 1 led green
+            cfg.POWER = 1
+        # <10%
+        elif (vol <= 340) or (vol <= 680) or (vol <= 1040):
             self.set_ledgroup(cfg.POWER_LIGHT, 1, cfg.COLOR['red'])
-            cfg.POWER = 0		# 电量档位值设置为0
+            cfg.POWER = 0
 
     #############################################
     #             Отключение ледов              #
