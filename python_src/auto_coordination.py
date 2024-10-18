@@ -144,6 +144,7 @@ class Coordinator:
         self.go.forward_with_angle(40,0)
         time.sleep(1)
         self.go.stop()
+        return self.movement_detector()
         
         # while not self.movement_detector():
         #     self.show_field()
@@ -287,7 +288,7 @@ class Coordinator:
 ult = Ultrasonic()
 go = RobotDirection()
 
-coordinator = Coordinator([0,0], 0, [2,4], [0,2], "rg", "mb", [4,0], False,ult,go)
+coordinator = Coordinator([0,4], 2, [2,4], [0,2], "rg", "mb", [4,0], False,ult,go)
 
 while True:
     coordinator.show_field()
@@ -309,17 +310,17 @@ while True:
     else:
         break
 
-time.sleep(2)
+# time.sleep(2)
+# #coordinator.move_forward()
+# time.sleep(2)
 #coordinator.move_forward()
-time.sleep(2)
-#coordinator.move_forward()
-ans = input()
-while ans!="":
-     if ans == "m":
-         coordinator.movement_detector()
-     elif ans == "r":
-         coordinator.rotate(1)
-     elif ans == "l":
-         coordinator.rotate(-1)
-     coordinator.show_field()
-     ans = input()
+# ans = input()
+# while ans!="":
+#      if ans == "m":
+#          coordinator.move_forward()
+#      elif ans == "r":
+#          go..rotate(1)
+#      elif ans == "l":
+#          coordinator.rotate(-1)
+#      coordinator.show_field()
+#      ans = input()

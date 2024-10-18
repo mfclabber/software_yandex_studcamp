@@ -7,7 +7,7 @@ from test_move import RobotDirection
 from ctrl_servo import CTRL_Servo
 
 control_s = CTRL_Servo()
-control_s.standart_pose()
+# control_s.standart_pose()
 
 go = RobotDirection()
 
@@ -65,7 +65,7 @@ class PIDController:
 
     def update(self, current_value):
         # Шаг 1: Вычисляем ошибку
-        error = self.setpoint - current_value
+        error = current_value - self.setpoint
 
         # Шаг 2: Вычисляем разницу времени
         current_time = time.time()
@@ -93,13 +93,10 @@ class PIDController:
 
         return output
     
-pid = PIDController(Kp=1.0, Ki=0.10 Kd=0.05, setpoint=320)
+pid = PIDController(Kp=0.1, Ki=0.0, Kd=0.05, setpoint=320)
 
-def calculate_steering_angle(current_position, target_position, K1, K2):
-    error_a = target_position - current_position
-    # error_r = np.linalg.norm(target_position - current_position)
-
-    steering_angle = K1 * error_r * np.cos(error_a) * np.sin(error_a) + K2 * error_a
+def calculate_steering_angle(target_position):
+    steering_angle = pid.update(target_position)
     steering_angle = max(-100, min(100, steering_angle))
 
     return steering_angle
@@ -208,9 +205,10 @@ try:
             steering_angle = 10
             speed = 0
         else:
-            steering_angle = calculate_steering_angle(current_position, position_with_label, K1, K2)
-            speed = calculate_speed(current_position, position_with_label, K1)
-            print(steering_angle, speed)
+            steering_angle = float(calculate_steering_angle(position_with_label))
+            speed = 15
+            # speed = calculate_speed(current_position, position_with_label, K1)
+            print(steering_angle, 35)
 
         #fps_count += 1 
 
@@ -218,7 +216,7 @@ try:
         #     speed += 10
 
         # print(f"FPS {fps}\n")
-        # go.forward_with_angle(speed, steering_angle)
+        go.forward_with_angle(speed, steering_angle)
         # time.sleep(1)
 
     cap.release()

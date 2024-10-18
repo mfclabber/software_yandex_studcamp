@@ -168,7 +168,7 @@ class RobotDirection(object):
 		# flag1, flag2 = 0,0
 		# sign = 1
 		# change_state = 0
-		while (abs(m_d)<20):
+		while (abs(m_d)<10):
 			#print(m_d)
 			error_correct = (dist-m)*kp+m_d*kd
 			err = max(-angle_lim, min(error_correct,angle_lim))
