@@ -93,7 +93,9 @@ class PIDController:
 
         return output
     
+    
 pid = PIDController(Kp=0.1, Ki=0.0, Kd=0.05, setpoint=320)
+
 
 def calculate_steering_angle(target_position):
     steering_angle = pid.update(target_position)
@@ -120,6 +122,8 @@ def calculate_speed(current_position, target_position, K1):
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind(('', 10000))  # IP-адрес Raspberry Pi и порт 10000
 server_socket.listen(1)
+
+server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 4096)
 
 print("Ожидание подключения клиента...")
 client_socket, addr = server_socket.accept()
@@ -177,12 +181,12 @@ try:
             break
         print(f"FRAME WIDTH: {frame.shape[1]}")
 
-        frame = align_histogram(frame)
-
+        # frame = align_histogram(frame)
+        
         _, buffer = cv2.imencode('.jpg', frame)
         data = buffer.tobytes()
 
-        client_socket.sendall(len(data).to_bytes(4, byteorder='big'))
+        client_socket.sendall(len(data).to_bytes(64, byteorder='big'))
         client_socket.sendall(data)
 
         data_size = client_socket.recv(4)
@@ -206,7 +210,7 @@ try:
             speed = 0
         else:
             steering_angle = float(calculate_steering_angle(position_with_label))
-            speed = 15
+            speed = 35
             # speed = calculate_speed(current_position, position_with_label, K1)
             print(steering_angle, 35)
 
@@ -216,10 +220,7 @@ try:
         #     speed += 10
 
         # print(f"FPS {fps}\n")
-        go.forward_with_angle(speed, steering_angle)
-        # time.sleep(1)
-
-    cap.release()
+        # go.forward_with_angle(speed, steering_angle)
 
 except ...:
 
@@ -228,7 +229,6 @@ except ...:
     server_socket.close()
 
 go.stop()
-
 cap.release()
 
 client_socket.close()

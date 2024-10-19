@@ -125,7 +125,7 @@ class RobotDirection(object):
 	
 	def follow_till_wall(self,dist,s,ul):
 		n = 3
-		speed = 40
+		speed = 60
 
 		if s=="l":
 			ul.rotate_sensor_l()
@@ -148,10 +148,12 @@ class RobotDirection(object):
 
 	def follow_wall(self,dist,s,ul):
 		n = 3
-		kp = 1
+		# kp = 1
+		# kd = 3
+		kp = 2
 		kd = 5
-		speed = 40
-		angle_lim = 20
+		speed = 60
+		angle_lim = 30
 
 		if s == "r":
 			kp = -kp
@@ -184,7 +186,7 @@ class RobotDirection(object):
 			# 	sign = sign*-1
 
 			self.forward_with_angle(speed,err)
-			#print("angle:", round(err),"dist:",m )
+			print("angle:", round(err),"dist:",m, "diff:",m_d )
 			new_d = ul.get_distance()
 			if new_d == -1:
 				pass
@@ -246,14 +248,17 @@ class RobotDirection(object):
 				self.stop()
 
 
-#ul = Ultrasonic()
+ul = Ultrasonic()
 
-# go.follow_wall(30,"r",ul)
-#go.gentle_move()
+go = RobotDirection()
 
-# go.forward_with_angle(30, 0)
+# go.follow_wall(20,"l",ul)
+# #go.gentle_move()
+
+# go = RobotDirection()
+# go.forward_with_angle(50, 0)
 # time.sleep(1)
-# go.forward_with_angle(75, -20)
+# # go.forward_with_angle(75, -20)
 # # go.reverse(100)
 # time.sleep(5)
 # go.forward_with_angle(50,-100)

@@ -56,9 +56,11 @@ class Coordinator:
         if walls_conf:
             self.tmo = [[0,2],[4,2]]
             self.tmi = [[1,2],[3,2]]
+            self.pass_points = [[2,0],[2,4]]
         else:
             self.tmo = [[2,0],[2,4]]
             self.tmi = [[2,1],[2,3]]
+            self.pass_points = [[0,2],[4,2]]
 
         self.robot_pos = np.array(robot_pos)
         self.robot_pos_e = np.array(self.inv_pos(robot_pos))
@@ -97,31 +99,36 @@ class Coordinator:
         if self.can_move():
             if [self.next_point[0],self.next_point[1]] in self.tmo and not ([self.robot_pos[0],self.robot_pos[1]] in self.tmi):
                 self.init_inner_walls(self.check_sonic() ^ self.walls_conf)
+                
+            
 
             self.field_map[self.robot_pos[0]][self.robot_pos[1]].cell_obj.pop()
+            if [self.next_point[0],self.next_point[1]] in self.pass_points:
+                self.robot_pos += self.directions[self.robot_dir]
+                self.robot_pos += self.directions[self.robot_dir]
             self.robot_pos += self.directions[self.robot_dir]
             self.field_map[self.robot_pos[0]][self.robot_pos[1]].cell_obj.append("r1")
             self.next_point = self.robot_pos+self.directions[self.robot_dir]
 
             self.show_field()
     
-    def movement_detector(self):
-        if self.can_move():
-            npt_w = []
-            for i in self.field_map[self.next_point[0]][self.next_point[1]].walls:
-                npt_w.append((i-self.robot_dir)%4)
-            if (([self.robot_pos[0],self.robot_pos[1]] in self.tmo)) and ([self.next_point[0],self.next_point[1]] in self.tmi):
-                if self.check_sonic():
-                    self.move_in_graph()
-                    return True
-            elif (([self.robot_pos[0],self.robot_pos[1]] in self.tmi)) and ([self.next_point[0],self.next_point[1]] in self.tmo):
-                if not (self.check_sonic()):
-                    self.move_in_graph()
-                    return True
-            elif (self.check_r() == (1 in npt_w)) and (self.check_l() == (3 in npt_w)):
-                self.move_in_graph()
-                return True
-        return False
+    # def movement_detector(self):
+    #     if self.can_move():
+    #         npt_w = []
+    #         for i in self.field_map[self.next_point[0]][self.next_point[1]].walls:
+    #             npt_w.append((i-self.robot_dir)%4)
+    #         if (([self.robot_pos[0],self.robot_pos[1]] in self.tmo)) and ([self.next_point[0],self.next_point[1]] in self.tmi):
+    #             if self.check_sonic():
+    #                 self.move_in_graph()
+    #                 return True
+    #         elif (([self.robot_pos[0],self.robot_pos[1]] in self.tmi)) and ([self.next_point[0],self.next_point[1]] in self.tmo):
+    #             if not (self.check_sonic()):
+    #                 self.move_in_graph()
+    #                 return True
+    #         elif (self.check_r() == (1 in npt_w)) and (self.check_l() == (3 in npt_w)):
+    #             self.move_in_graph()
+    #             return True
+    #     return False
     
     def move_forward(self):
         side = 'none'
@@ -137,14 +144,14 @@ class Coordinator:
                     side_next = "r"
                 elif (i-self.robot_dir)%4 == 3:
                     side_next = "l"
-            self.go.follow_till_wall(30,side_next,self.sonic)
+            self.go.follow_till_wall(25,side_next,self.sonic)
         else:
-            self.go.follow_wall(30,side,self.sonic)
+            self.go.follow_wall(20,side,self.sonic)
         
-        self.go.forward_with_angle(40,0)
+        self.go.forward_with_angle(60,0)
         time.sleep(1)
         self.go.stop()
-        return self.movement_detector()
+        self.move_in_graph()
         
         # while not self.movement_detector():
         #     self.show_field()
@@ -153,17 +160,17 @@ class Coordinator:
             
 
 
-    def check_r(self):
-        self.sonic.rotate_sensor_r()
-        time.sleep(0.5)
-        print("RIGHT:",self.sonic.get_distance())
-        return self.sonic.get_distance() < self.MIN_SONIC_DIST
+    # def check_r(self):
+    #     self.sonic.rotate_sensor_r()
+    #     time.sleep(0.5)
+    #     print("RIGHT:",self.sonic.get_distance())
+    #     return self.sonic.get_distance() < self.MIN_SONIC_DIST
 
-    def check_l(self):
-        self.sonic.rotate_sensor_l()
-        time.sleep(0.5)
-        print("LEFT",self.sonic.get_distance())
-        return self.sonic.get_distance() < self.MIN_SONIC_DIST
+    # def check_l(self):
+    #     self.sonic.rotate_sensor_l()
+    #     time.sleep(0.5)
+    #     print("LEFT",self.sonic.get_distance())
+    #     return self.sonic.get_distance() < self.MIN_SONIC_DIST
     
     def check_sonic(self):
         for i in self.field_map[self.robot_pos[0]][self.robot_pos[1]].walls:
@@ -288,7 +295,7 @@ class Coordinator:
 ult = Ultrasonic()
 go = RobotDirection()
 
-coordinator = Coordinator([0,4], 2, [2,4], [0,2], "rg", "mb", [4,0], False,ult,go)
+coordinator = Coordinator([4,0], 3, [2,4], [0,2], "rg", "mb", [4,0], False, ult,go)
 
 while True:
     coordinator.show_field()
