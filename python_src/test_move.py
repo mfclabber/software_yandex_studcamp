@@ -256,7 +256,7 @@ go = RobotDirection()
 # #go.gentle_move()
 
 # go = RobotDirection()
-# go.forward_with_angle(50, 0)
+# go.forward_with_angle(100, 0)
 # time.sleep(1)
 # # go.forward_with_angle(75, -20)
 # # go.reverse(100)

@@ -142,7 +142,7 @@ class CTRL_Servo():
         # self.set_claw(True)
         #self.set_pose(self.HIGH_S1 - 50, self.HIGH_S2 + 90)
         #time.sleep(0.5)
-        self.set_pose(self.HIGH_S1 - 75, self.HIGH_S2 + 80)
+        self.set_pose(self.HIGH_S1 - 80, self.HIGH_S2 + 80)
         time.sleep(1)
         self.set_pose(self.HIGH_S1-60, self.HIGH_S2+90)
         time.sleep(0.5)
