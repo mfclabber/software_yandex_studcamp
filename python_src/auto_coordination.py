@@ -248,13 +248,13 @@ class Coordinator:
                     side_next = "r"
                 elif (i-self.robot_dir)%4 == 3:
                     side_next = "l"
-            self.go.follow_till_wall(25,side_next,self.sonic)
+            self.go.follow_till_wall(50,side_next,self.sonic)
         else:
-            self.go.follow_wall(20,side,self.sonic)
+            self.go.follow_wall(30,side,self.sonic)
         
         
         ### КОСТЫЛЬ (проезжаем еще немного +- вглубь клетки)
-        self.go.forward_with_angle(60,0)
+        self.go.forward_with_angle(50,0)
         time.sleep(1)
         self.go.stop()
 
@@ -421,7 +421,7 @@ class Coordinator:
 ult = Ultrasonic()
 go = RobotDirection()
 
-coordinator = Coordinator([4,0], 3, [2,4], [0,2], [4,0], False, ult,go)
+coordinator = Coordinator([0,0], 0, [2,4], [0,2], [4,0], False, ult,go)
 coordinator.show_field()
 
 while True:
