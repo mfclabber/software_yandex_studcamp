@@ -4,21 +4,20 @@ from gate_detection import gate_detection
 import cv2 as cv
 
 
-
 ID2LABEL_UPCAM = dict([
-            (0, "G_O button"),
-            (1, "P_B button"), 
-            (2, "cube"),
-            (3, "green base"),
-            (4, "red base"),
-            (5, "robot with green"),
-            (6, "robot with red")
-        ])
+    (0, "G_O button"),
+    (1, "P_B button"), 
+    (2, "cube"),
+    (3, "green base"),
+    (4, "red base"),
+    (5, "robot with green"),
+    (6, "robot with red")
+])
 
 
 # rtsp_url = "/home/sruwer/python_opencv_venv/jupyter-venv/output_left_data_another_combination_1.avi"
-rtsp_url = "rtsp://Admin:rtf123@192.168.2.250:554/1/1"
 def UP_CAM(color = 'red'):
+    rtsp_url = "rtsp://Admin:rtf123@192.168.2.250:554/1/1"
     frame, list_of_points, annotated_frame = YOLO_UP_CAM(rtsp_url)
 
     print(list_of_points)
@@ -91,4 +90,4 @@ def UP_CAM(color = 'red'):
     # параметры котоыре надо передать в класс Тимура 
     return(robot_pos, base_pos, robot_dir ,rg_pos, cube_pos, walls_conf)
 
-UP_CAM('green')
+# UP_CAM('green')

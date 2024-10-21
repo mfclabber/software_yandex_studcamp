@@ -111,8 +111,8 @@ class Coordinator:
 
         # Инициализируем стены
 
-        self.walls_conf = walls_conf
-        self.init_out_walls()
+        self.walls_conf = walls_conf[0]
+        self.init_inner_walls(walls_conf[1])
         
 
         ### КОСТЫЛИ (но рабочие)
@@ -123,7 +123,7 @@ class Coordinator:
         # а также инверсированные к ним
         # pass_points и tmi_r соответственно
 
-        if walls_conf:
+        if walls_conf[0]:
             self.tmo = [[0,2],[4,2]]
             self.tmi = [[1,2],[3,2]]
             self.pass_points = [[2,0],[2,4]]
@@ -204,8 +204,8 @@ class Coordinator:
         if self.can_move():
             
             # Проверка возможности определения конфигурации внутренних стен
-            if [self.next_point[0],self.next_point[1]] in self.tmo and not ([self.robot_pos[0],self.robot_pos[1]] in self.tmi):
-                self.init_inner_walls(self.check_sonic() ^ self.walls_conf)
+            # if [self.next_point[0],self.next_point[1]] in self.tmo and not ([self.robot_pos[0],self.robot_pos[1]] in self.tmi):
+            #     self.init_inner_walls(self.check_sonic() ^ self.walls_conf)
             
             # Убираем из нынешней клетки робота
             self.field_map[self.robot_pos[0]][self.robot_pos[1]].cell_obj.pop(
@@ -279,7 +279,7 @@ class Coordinator:
             
             
             ### КОСТЫЛЬ (проезжаем еще немного +- вглубь клетки)
-            self.go.forward_with_angle(50,0)
+            self.go.forward_with_angle(45,0)
             time.sleep(1)
             self.go.stop()
 
@@ -288,7 +288,7 @@ class Coordinator:
     
 
     def rotate(self,dir):
-        self.go.forward_with_angle(0,dir*100)
+        self.go.forward_with_angle(0,dir*80)
         time.sleep(0.5)
         self.go.stop()
         self.rotate_in_graph(dir)
@@ -427,13 +427,14 @@ class Coordinator:
 
         graph = Graph()
 
-        for x in range(4):
-            for y in range(4):
-                if not (1 in self.field_map[x][y].walls):
+        for x in range(5):
+            for y in range(5):
+                if not (1 in self.field_map[x][y].walls) and x<4:
                     graph.add_edge(x*5+y,(x+1)*5+y)
-                if not (0 in self.field_map[x][y].walls):
+                if not (0 in self.field_map[x][y].walls) and y<4:
                     graph.add_edge(x*5+y,x*5+y+1)
-        
+        for edge in graph.edges:
+            print(edge)
         return graph
 
     def calculate_path(self,point):
@@ -484,6 +485,7 @@ class Coordinator:
 
         for comm in path:
             if comm == 0:
+                finish_rotate(self.go,cap)
                 self.move_forward()
             elif comm == 1:
                 self.rotate(1)
@@ -492,7 +494,6 @@ class Coordinator:
                 self.rotate(1)
             elif comm == 3:
                 self.rotate(-1)
-            finish_rotate(self.go,cap)
         cap.release()
     
     def go_to(self,point):
@@ -526,7 +527,7 @@ ult = Ultrasonic()
 go = RobotDirection()
 infr = Infrared()
 
-coordinator = Coordinator([0,0], 0, [2,4], [0,2], [4,0], False, ult,go,infr)
+coordinator = Coordinator([4,0], 0, [2,4], [0,2], [4,0], [True,False], ult,go,infr)
 
 while True:
     x,y = map(int,input().split())
