@@ -12,7 +12,7 @@ from xr_power import Power
 pw = Power()
 
 # led.red_team_both_led()
-# led.show_vol()
+#led.show_vol()
 #
 
         #time.sleep(1)
@@ -20,7 +20,7 @@ pw = Power()
 #led.green_team_both_led()
 #led.red_team_second_led()
 led.red_team_both_led()
-# led.off_both_led()
-#led.rainbow(1)
+#led.off_both_led()
+# led
 # while True:
 #     pw.show_vol()

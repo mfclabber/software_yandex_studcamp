@@ -16,7 +16,7 @@ MIDDLE_X_IMAGE = 320
 def align_histogram(frame): 
     frame_rgb = cv2.split(frame) 
     mean1 = np.mean(frame_rgb) 
-    desired_mean = 60 
+    desired_mean = 70 
     alpha = mean1 / desired_mean 
     Inew_RGB = [] 
     for layer in frame_rgb: 
@@ -113,12 +113,12 @@ def find_blue_object(frame):
         return (x, y, w, h)
     else:
         return None
+ 
     
-
-def find_gray_box(frame, min_area=500, max_area=5000):
+def find_gray_box(frame, min_area=500, max_area=10000):
     # Обрезаем верхнюю часть изображения
     height, width = frame.shape[:2]
-    crop_fraction = 0.7
+    crop_fraction = 0.6
     frame = frame[:int(height * crop_fraction), :]
 
     # Преобразуем изображение в цветовое пространство HSV
@@ -126,10 +126,10 @@ def find_gray_box(frame, min_area=500, max_area=5000):
 
     # Определяем диапазоны для темно-серого цвета (несколько диапазонов для разных оттенков)
     lower_gray1 = np.array([0, 0, 0])
-    upper_gray1 = np.array([180, 120, 50])
+    upper_gray1 = np.array([180, 100, 50])
     
     lower_gray2 = np.array([0, 0, 0])
-    upper_gray2 = np.array([180, 30, 120])
+    upper_gray2 = np.array([180, 100, 80])
 
     # Создаем маски для темно-серого цвета
     mask1 = cv2.inRange(hsv, lower_gray1, upper_gray1)
@@ -166,47 +166,6 @@ def find_gray_box(frame, min_area=500, max_area=5000):
 
     return best_bbox if best_bbox else None
     
-
-def find_gray_mesh_box(frame):
-    # Преобразуем изображение в серый цвет
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-    # Применяем CLAHE для улучшения контраста
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-    enhanced_gray = clahe.apply(gray)
-
-    # Убираем шум с помощью GaussianBlur
-    blurred = cv2.GaussianBlur(enhanced_gray, (5, 5), 0)
-
-    # Используем детектор краев Canny для выявления сетчатой структуры
-    edges = cv2.Canny(blurred, 50, 150)
-
-    # Применяем морфологическую обработку для усиления контуров
-    edges = cv2.dilate(edges, np.ones((3, 3), np.uint8), iterations=1)
-
-    # Находим контуры на изображении
-    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    detected_boxes = []
-
-    for contour in contours:
-        area = cv2.contourArea(contour)
-        
-        # Фильтруем контуры по площади, чтобы исключить слишком маленькие или большие объекты
-        if 50 < area < 10000:  # Настроим пороги под твою задачу
-            x, y, w, h = cv2.boundingRect(contour)
-            aspect_ratio = w / float(h)
-
-            # Фильтрация по соотношению сторон
-            if 0.8 < aspect_ratio < 1.2:  # Корзина может иметь почти квадратную форму
-                detected_boxes.append((x, y, w, h))
-
-    # Если найдено несколько объектов, выбираем самый большой
-    if len(detected_boxes) > 0:
-        largest_box = max(detected_boxes, key=lambda box: box[2] * box[3])
-        return largest_box
-    else:
-        return None
 
 class PIDController:
     def __init__(self, Kp, Ki, Kd, setpoint=0):
@@ -245,7 +204,14 @@ class PIDController:
 
 def calculate_steering_angle(target_position):
     steering_angle = pid.update(target_position)
-    steering_angle = max(-70, min(70, steering_angle))
+    if isinstance(steering_angle, np.ndarray):
+        # Если это массив, примените ограничение поэлементно
+        steering_angle = np.max(np.clip(steering_angle, -70, 70))
+    else:
+        # Если это скаляр
+        steering_angle = max(-70, min(70, steering_angle))
+
+    
 
     return steering_angle
 
@@ -275,7 +241,7 @@ if __name__ == "__main__":
 
     control_s.standart_pose()
 
-    pid = PIDController(Kp=0.15, Ki=0.0, Kd=0.01, setpoint=320)
+    pid = PIDController(Kp=0.15, Ki=0.0, Kd=0.03, setpoint=320)
     try:
         # CUBE
         # while coordinates_object != None:
@@ -333,7 +299,7 @@ if __name__ == "__main__":
         #     #     speed = 0
         #     # else:
         #     steering_angle = float(calculate_steering_angle(position_with_label))
-        #     speed = 30
+        #     speed = 20
         #         # speed = calculate_speed(current_position, position_wiwwwwwwwwth_label, K1)
         #     print(steering_angle, speed)
         #     # print()
@@ -343,48 +309,19 @@ if __name__ == "__main__":
         #     if gpio.digital_read(gpio.IR_M) == 0:
         #         go.stop()
         #         object_is_find = True
-                # break
+        #         break
+
+        # control_s.push_button()
 
 
         # GET CUBE AND GET DOWN TO BOX
-        # while coordinates_object != None:
-        #     ret, frame = cap.read()
-        #     frame = align_histogram(frame)
-        #     if not ret:
-        #         break
-
-        #     coordinates_object = find_red_cube(frame)
-
-        #     if coordinates_object != None:
-        #         x, y, h, w = coordinates_object 
-        #         position_with_label = x
-
-        #     _, buffer = cv2.imencode('.jpg', frame)
-        #     data = buffer.tobytes()
-
-        #     steering_angle = float(calculate_steering_angle(position_with_label))
-        #     speed = 30
-
-        #     print(steering_angle, speed)
-        #     go.forward_with_angle(speed, steering_angle)
-
-        #     if gpio.digital_read(gpio.IR_M) == 0:
-        #         go.stop()
-        #         object_is_find = True
-        #         break
-        
-        # go.stop()
-        # time.sleep(0.5)
-        # control_s.take_cube()
-
-        object_is_find = False
-        while object_is_find != True:
+        while coordinates_object != None:
             ret, frame = cap.read()
             frame = align_histogram(frame)
             if not ret:
                 break
 
-            coordinates_object = find_gray_box(frame)
+            coordinates_object = find_red_cube(frame)
 
             if coordinates_object != None:
                 x, y, h, w = coordinates_object 
@@ -399,11 +336,43 @@ if __name__ == "__main__":
             print(steering_angle, speed)
             go.forward_with_angle(speed, steering_angle)
 
-            if gpio.digital_read(gpio.IR_L) == 0 or gpio.digital_read(gpio.IR_R) == 0:
+            if gpio.digital_read(gpio.IR_M) == 0:
                 time.sleep(0.1)
                 go.stop()
                 object_is_find = True
                 break
+        
+        go.stop()
+        time.sleep(0.5)
+        control_s.take_cube()
+
+        # object_is_find = False
+        # while object_is_find != True:
+        #     ret, frame = cap.read()
+        #     frame = align_histogram(frame)
+        #     if not ret:
+        #         break
+
+        #     coordinates_object = find_gray_box(frame)
+
+        #     if coordinates_object != None:
+        #         x, y, h, w = coordinates_object 
+        #         position_with_label = x
+
+        #     _, buffer = cv2.imencode('.jpg', frame)
+        #     data = buffer.tobytes()
+
+        #     steering_angle = float(calculate_steering_angle(position_with_label))
+        #     speed = 30
+
+        #     print(steering_angle, speed)
+        #     go.forward_with_angle(speed, steering_angle)
+
+        #     if gpio.digital_read(gpio.IR_L) == 0 or gpio.digital_read(gpio.IR_R) == 0:
+        #         time.sleep(0.1)
+        #         go.stop()
+        #         object_is_find = True
+        #         break
 
         control_s.drop_object()
         
@@ -414,7 +383,7 @@ if __name__ == "__main__":
     go.stop()
 
     # control_s.push_button()
-    # control_s.standart_pose()
+    control_s.standart_pose()
     # control_s.take_cube()
     # time.sleep(2)
     # control_s.drop_object()
