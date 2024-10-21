@@ -4,7 +4,7 @@ import numpy as np
 from skimage.draw import line
 
 
-def gate_detection(img):
+def gate_detection(img, show_flag = False):
     def edge_dilated(img):
         # num номер варианта обработки изображеняи
 
@@ -204,14 +204,7 @@ def gate_detection(img):
     r_line_top = find_next_0(farthest_points_rt,"right")
     t_line_left = find_next_0(farthest_points_lt,"up")
     l_line_top = find_next_0(farthest_points_lt,"left")
-    cv2.line(rgb_image,[b_line_left[0], b_line_left[1]], [b_line_right[0], b_line_right[1]], (255,0,0), 1)
-    cv2.line(rgb_image,[l_line_bottom[0], l_line_bottom[1]], [l_line_top[0], l_line_top[1]], (255,0,0), 1)
-    cv2.line(rgb_image,[t_line_left[0], t_line_left[1]], [t_line_right[0], t_line_right[1]], (255,0,0), 1)
-    cv2.line(rgb_image,[r_line_bottom[0], r_line_bottom[1]], [r_line_top[0], r_line_top[1]], (255,0,0), 1)
-
-    cv2.imshow("Binary", binary_image_outer)
-    cv2.imshow("Binary_2", binary_image_inner)
-    cv2.imshow("RGB", rgb_image)
+    
 
     down = check_box(b_line_left,b_line_right, "down")
     up = check_box(t_line_left,t_line_right, "up")
@@ -226,7 +219,15 @@ def gate_detection(img):
         print("Слева и справа")
         external_wall = False
 
+    if show_flag:
+        cv2.imshow("Binary", binary_image_outer)
+        cv2.imshow("Binary_2", binary_image_inner)
+        cv2.imshow("RGB", rgb_image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        cv2.line(rgb_image,[b_line_left[0], b_line_left[1]], [b_line_right[0], b_line_right[1]], (255,0,0), 1)
+        cv2.line(rgb_image,[l_line_bottom[0], l_line_bottom[1]], [l_line_top[0], l_line_top[1]], (255,0,0), 1)
+        cv2.line(rgb_image,[t_line_left[0], t_line_left[1]], [t_line_right[0], t_line_right[1]], (255,0,0), 1)
+        cv2.line(rgb_image,[r_line_bottom[0], r_line_bottom[1]], [r_line_top[0], r_line_top[1]], (255,0,0), 1)
 
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
     return external_wall, internal_wall

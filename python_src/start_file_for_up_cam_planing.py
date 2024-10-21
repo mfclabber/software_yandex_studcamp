@@ -16,16 +16,15 @@ ID2LABEL_UPCAM = dict([
 
 
 # rtsp_url = "/home/sruwer/python_opencv_venv/jupyter-venv/output_left_data_another_combination_1.avi"
-def UP_CAM(color = 'red'):
+def UP_CAM(color = 'red', show_flag = False):
     rtsp_url = "rtsp://Admin:rtf123@192.168.2.250:554/1/1"
     frame, list_of_points, annotated_frame = YOLO_UP_CAM(rtsp_url)
 
-    print(list_of_points)
-
-
-    cv.imshow('YOLO Detected Frame', annotated_frame)
-    cv.waitKey(0)
-    cv.destroyAllWindows()
+    if show_flag:
+        cv.imshow('YOLO Detected Frame', annotated_frame)
+        print(list_of_points)
+        cv.waitKey(0)
+        cv.destroyAllWindows()
 
     """
         robot_pos - позиция робота на сетке в виде [x,y]
@@ -37,14 +36,14 @@ def UP_CAM(color = 'red'):
             True (сверху и снизу) / False (стены справа и слева)
             [внешние_стенки, внутренние_стенки]
     """
-    grid_matrix, list_of_points_with_pos = setka(list_of_points, frame)
+    grid_matrix, list_of_points_with_pos = setka(list_of_points, frame, show_flag)
 
     #print(grid_matrix)
     """
         list_of_points_with_pos
         [x_centr, y_centr, class, x_pos, y_pos]
     """
-    print(list_of_points_with_pos)
+    # print(list_of_points_with_pos)
 
     red_robot_pos = [pos[3:] for pos in list_of_points_with_pos if pos[2] == 6]
     green_robot_pos = [pos[3:] for pos in list_of_points_with_pos if pos[2] == 5]
@@ -70,7 +69,7 @@ def UP_CAM(color = 'red'):
         robot_pos = red_robot_pos
         base_pos = red_base_pos
 
-    external_wall, internal_wall = gate_detection(frame)
+    external_wall, internal_wall = gate_detection(frame, show_flag)
 
     walls_conf = [external_wall, internal_wall]
 

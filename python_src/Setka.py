@@ -3,7 +3,7 @@ import numpy as np
 from frame_edit_func import rotate_frame
 
 
-def setka(list_of_point, image):
+def setka(list_of_point, image, show_flag = False):
     """
     list_of_point [ [x, y, class] ]
     """
@@ -92,14 +92,14 @@ def setka(list_of_point, image):
         points.append(find_grid_sector_custom_blocks(blocks, list_of_point[i]))
         if points[i] == None:
             continue
-        print('points ',points)
-        print(points[i])
+        # print('points ',points)
+        # print(points[i])S
         _x = points[i][0] % 5
         _y = points[i][0] // 5
         list_of_point_with_pos[i].append(_x)
         list_of_point_with_pos[i].append(_y)
         
-    print(points)
+    # print(points)
     
     # Создаём матрицу с количеством блоков
     grid_matrix = np.empty(len(blocks), dtype=object)
@@ -112,9 +112,10 @@ def setka(list_of_point, image):
                 grid_matrix[p[0]].append(p[1])
 
     # Выводим изображение с сеткой и точкой
-    cv2.imshow('Final Image with Grid and Random Points', grid_image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    if show_flag:
+        cv2.imshow('Final Image with Grid and Random Points', grid_image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
     # Вывод матрицы с отмеченным сектором
     # print("Сетка с отмеченными секторами:")
