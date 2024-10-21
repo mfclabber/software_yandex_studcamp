@@ -3,10 +3,15 @@ import numpy as np
 from test_move import RobotDirection
 from xr_ultrasonic import Ultrasonic
 import time
+from path_planning import Graph, shortest_path
+from smart_rotate import finish_rotate
+from xr_infrared import Infrared
+import cv2
+
 
 class Cell:
     '''
-    Класс клетки графа
+    Класс клетки сетки
     '''
 
     def __init__(self, pos, walls, cell_obj):
@@ -45,6 +50,7 @@ class Cell:
             ans[1] = "|"
         
         return ans
+    
 
 class Coordinator:
 
@@ -52,7 +58,7 @@ class Coordinator:
     Класс координатора внутри графа
     '''
 
-    def __init__(self, robot_pos, robot_dir, base_pos, rg_pos, cube_pos, walls_conf, sonic, go):
+    def __init__(self, robot_pos, robot_dir, base_pos, rg_pos, cube_pos, walls_conf, sonic, go,infr):
 
         '''
         Инициализирует координатор
@@ -71,6 +77,7 @@ class Coordinator:
         
         self.go = go
         self.sonic = sonic
+        self.infr = infr
 
         # Пределы расстояния, на которых может 
         # находиться внутренняя стенка 
@@ -112,16 +119,20 @@ class Coordinator:
 
         # Обозначаем клетки внешнего (tmo от trouble maker out) 
         # и внутреннего (tmi от trouble maker in) квадрата,
-        # стоящие при пустотах во внешней стенке
+        # стоящие при пустотах во внешней стенке,
+        # а также инверсированные к ним
+        # pass_points и tmi_r соответственно
 
         if walls_conf:
             self.tmo = [[0,2],[4,2]]
             self.tmi = [[1,2],[3,2]]
             self.pass_points = [[2,0],[2,4]]
+            self.tmi_r = [[2,1],[2,3]]
         else:
             self.tmo = [[2,0],[2,4]]
             self.tmi = [[2,1],[2,3]]
             self.pass_points = [[0,2],[4,2]]
+            self.tmi_r = [[1,2],[3,2]]
 
 
         # Задаем начальную позицию нашего робота
@@ -225,48 +236,62 @@ class Coordinator:
         '''
         Продвижение робота вперед
         '''
-
-
-        # Проверяем, можем ли сейчас двигаться вдоль стены
-        # (если можем, то вдоль какой; по умолчанию - левой (ИСПРАВИТЬ) )
-
-        side = 'none'
-        for i in self.field_map[self.robot_pos[0]][self.robot_pos[1]].walls:
-            if (i-self.robot_dir)%4 == 1:
-                side = "r"
-            elif (i-self.robot_dir)%4 == 3:
-                side = "l"
         
+        if self.can_move():
+            side = 'none'
 
-        # Если сейчас стены рядом нет - проверяем, до какой стены 
-        # можем доехать, двигаясь по прямой
+            # Если стоим во внутреннем квадрате и направлены в клетку,
+            # прилежащую к внешней стене - нужно двигаться, ориентируясь в противоположную сторону
 
-        if side == 'none':
-            side_next = 'none'
-            for i in self.field_map[self.next_point[0]][self.next_point[1]].walls:
-                if (i-self.robot_dir)%4 == 1:
-                    side_next = "r"
-                elif (i-self.robot_dir)%4 == 3:
-                    side_next = "l"
-            self.go.follow_till_wall(50,side_next,self.sonic)
-        else:
-            self.go.follow_wall(30,side,self.sonic)
-        
-        
-        ### КОСТЫЛЬ (проезжаем еще немного +- вглубь клетки)
-        self.go.forward_with_angle(50,0)
-        time.sleep(1)
-        self.go.stop()
+            if [self.next_point[0], self.next_point[1]] in self.tmi_r:
+                for i in self.field_map[self.robot_pos[0]][self.robot_pos[1]].walls:
+                    if (i-self.robot_dir)%4 == 1:
+                        side = "l"
+                    elif (i-self.robot_dir)%4 == 3:
+                        side = "r"
+                self.go.follow_till_wall(40,side,self.sonic,self.infr)
 
-        # Продвигаем робота в графе
-        self.move_in_graph()
+            else:
+
+                # Проверяем, можем ли сейчас двигаться вдоль стены
+                # (если можем, то вдоль какой)
+
+                for i in self.field_map[self.robot_pos[0]][self.robot_pos[1]].walls:
+                    if (i-self.robot_dir)%4 == 1:
+                        side = "r"
+                    elif (i-self.robot_dir)%4 == 3:
+                        side = "l"
+
+
+                # Если сейчас стены рядом нет - проверяем, до какой стены 
+                # можем доехать, двигаясь по прямой
+
+                if side == 'none':
+                    side_next = 'none'
+                    for i in self.field_map[self.next_point[0]][self.next_point[1]].walls:
+                        if (i-self.robot_dir)%4 == 1:
+                            side_next = "r"
+                        elif (i-self.robot_dir)%4 == 3:
+                            side_next = "l"
+                    self.go.follow_till_wall(40,side_next,self.sonic,self.infr)
+                else:
+                    self.go.follow_wall(20,side,self.sonic,self.infr)
+            
+            
+            ### КОСТЫЛЬ (проезжаем еще немного +- вглубь клетки)
+            self.go.forward_with_angle(50,0)
+            time.sleep(1)
+            self.go.stop()
+
+            # Продвигаем робота в графе
+            self.move_in_graph()
     
 
     def rotate(self,dir):
         self.go.forward_with_angle(0,dir*100)
         time.sleep(0.5)
         self.go.stop()
-        self.rotate_in_graph(1)
+        self.rotate_in_graph(dir)
 
     
     def check_sonic(self):
@@ -393,7 +418,86 @@ class Coordinator:
             self.field_map[1][2].walls.append(3)
             self.field_map[3][2].walls.append(1)
             self.field_map[4][2].walls.append(3)
+    
+    def graph_repr(self):
 
+        '''
+        Метод, возвращающий текущее состояние сетки в виде графа
+        '''
+
+        graph = Graph()
+
+        for x in range(4):
+            for y in range(4):
+                if not (1 in self.field_map[x][y].walls):
+                    graph.add_edge(x*5+y,(x+1)*5+y)
+                if not (0 in self.field_map[x][y].walls):
+                    graph.add_edge(x*5+y,x*5+y+1)
+        
+        return graph
+
+    def calculate_path(self,point):
+
+        '''
+        Рассчет кратчайшего пути
+        '''
+
+        point_1 = int(self.robot_pos[0]*5 + self.robot_pos[1])
+        point_2 = int(point[0]*5 + point[1])
+        
+        path_points = [np.array([i//5,i%5]) for i in shortest_path(self.graph_repr(), point_1, point_2)]
+        print(path_points)
+        path = []
+        dir = self.robot_dir
+
+        for i in range(len(path_points)-1):
+
+            dx = path_points[i+1][0]-path_points[i][0]
+            dy = path_points[i+1][1]-path_points[i][1]
+
+            if dx == 1:  # Движение на восток
+                desired_direction = 1
+            elif dx == -1:  # Движение на запад
+                desired_direction = 3
+            elif dy == 1:  # Движение на север
+                desired_direction = 0
+            elif dy == -1:  # Движение на юг
+                desired_direction = 2
+            
+            comm = (desired_direction - dir) % 4
+            dir = desired_direction
+            path.append(comm)
+            if comm != 0:
+                path.append(0)
+        
+        print(path)
+
+        return path
+
+    def execute_path(self,path):
+        
+        '''
+        Выполняет заданный путь
+        '''
+        
+        cap = cv2.VideoCapture(0)
+
+        for comm in path:
+            if comm == 0:
+                self.move_forward()
+            elif comm == 1:
+                self.rotate(1)
+            elif comm == 2:
+                self.rotate(1)
+                self.rotate(1)
+            elif comm == 3:
+                self.rotate(-1)
+            finish_rotate(self.go,cap)
+        cap.release()
+    
+    def go_to(self,point):
+        path = self.calculate_path(point)
+        self.execute_path(path)
 
     def show_field(self):
 
@@ -420,17 +524,25 @@ class Coordinator:
 
 ult = Ultrasonic()
 go = RobotDirection()
+infr = Infrared()
 
-coordinator = Coordinator([0,0], 0, [2,4], [0,2], [4,0], False, ult,go)
-coordinator.show_field()
+coordinator = Coordinator([0,0], 0, [2,4], [0,2], [4,0], False, ult,go,infr)
 
 while True:
-    comm = input()
-    if comm == "0":
-        coordinator.move_forward()
-    elif comm == "1":
-        coordinator.rotate(1)
-    elif comm == "-1":
-        coordinator.rotate(-1)
-    elif comm == "q":
-        break
+    x,y = map(int,input().split())
+    coordinator.go_to(np.array([x,y]))
+
+# cap = cv2.VideoCapture(0)
+# while True:
+#     coordinator.show_field()
+#     comm = input()
+#     if comm == "0":
+#         coordinator.move_forward()
+#     elif comm == "1":
+#         coordinator.rotate(1)
+#     elif comm == "-1":
+#         coordinator.rotate(-1)
+#     elif comm == 'q':
+#         break
+#     finish_rotate(go,cap)
+# cap.release()

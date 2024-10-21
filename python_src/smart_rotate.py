@@ -13,7 +13,7 @@ def detect_perspective_x(image,ret):
     image = cv2.resize(image,None,fx=1,fy=1.7)
     h1 = image.shape[0]
     
-    HORIZONT = -0.7*h*1.7/2
+    HORIZONT = -0.3*h*1.7/2
 
     gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
     cv2.circle(gray,(round(w*0.5)-20,h1+10),200,0,-1)
@@ -88,21 +88,19 @@ def detect_perspective_x(image,ret):
     ret.write(image_wide)
     return x_mean
 
-def rotate():
-    go = RobotDirection()
-    cap = cv2.VideoCapture(0)
+def finish_rotate(go,cap):
     pid = PIDController(0.25,0.2,0,320)
     lim = 30
     result = cv2.VideoWriter('it worked1.avi',
                          cv2.VideoWriter_fourcc(*'XVID'), 
-                         20, (640*2,460*2),True)
+                         10, (640*2,460*2),True)
 
     # try:
-    for i in range(1000):
+    for i in range(50):
         ret, frame = cap.read()
 
         if (ret) and i%10 == 0:
-            lim = 100
+            lim = 60
             res = detect_perspective_x(frame,result)
             if res:
                 angle = pid.update(res)
@@ -112,6 +110,10 @@ def rotate():
                 print(f"angle:{angle}    res:{res-320}")
                 time.sleep(0.3)
                 go.stop()
+            else:
+               print('no wall found')
+        elif i%10 == 0:
+           print('no video for ya')
         
         #else:
         #    cap.release()
@@ -119,7 +121,8 @@ def rotate():
         #    print('no video')
         #    break
     result.release()
-    cap.release()
-    cv2.destroyAllWindows()
 
-rotate()
+# go = RobotDirection()
+# cap = cv2.VideoCapture(0)
+# finish_rotate(go,cap)
+# cap.release()

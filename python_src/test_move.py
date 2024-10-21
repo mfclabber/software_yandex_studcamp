@@ -154,7 +154,7 @@ class RobotDirection(object):
 		k_prev = 0.2
 
 		speed = 35
-		angle_lim = 25
+		angle_lim = 20
 
 		if s == "r":
 			kp = -kp
@@ -252,10 +252,10 @@ class RobotDirection(object):
 				self.stop()
 
 
-ul = Ultrasonic()
-infr = Infrared()
+# ul = Ultrasonic()
+# infr = Infrared()
 
-go = RobotDirection()
+# go = RobotDirection()
 
 # go.follow_wall(20,"l",ul,infr)
 
@@ -263,11 +263,11 @@ go = RobotDirection()
 # go.gentle_move()
 
 # go = RobotDirection()
-# go.forward_with_angle(100, 0)
+# go.forward_with_angle(0, 100)
 # time.sleep(1)
 # # go.forward_with_angle(75, -20)
 # # go.reverse(100)
 # time.sleep(5)
 # go.forward_with_angle(50,-100)
-# time.sleep(1)
+# time.sleep(10)
 # go.stop()

@@ -4,7 +4,7 @@ import numpy as np
 
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_socket.bind(('172.20.10.5', 10000))  # IP-адрес Raspberry Pi и порт 10000
+server_socket.bind(('192.168.2.217', 10000))  # IP-адрес Raspberry Pi и порт 10000
 server_socket.listen(1)
 
 print("Ожидание подключения клиента...")
@@ -14,7 +14,7 @@ print(f"Подключен к {addr}")
 def align_histogram(frame): 
     frame_rgb = cv2.split(frame) 
     mean1 = np.mean(frame_rgb) 
-    desired_mean = 60 
+    desired_mean = 70
     alpha = mean1 / desired_mean 
     Inew_RGB = [] 
     for layer in frame_rgb: 
@@ -147,10 +147,10 @@ def mask_top_corners(frame, corner_fraction=0.2):
 
     return frame_masked
 
-def find_gray_box(frame, min_area=500, max_area=5000):
+def find_gray_box(frame, min_area=500, max_area=10000):
     # Обрезаем верхнюю часть изображения
     height, width = frame.shape[:2]
-    crop_fraction = 0.7
+    crop_fraction = 0.8
     frame = frame[:int(height * crop_fraction), :]
 
     # Преобразуем изображение в цветовое пространство HSV
@@ -161,7 +161,7 @@ def find_gray_box(frame, min_area=500, max_area=5000):
     upper_gray1 = np.array([180, 120, 50])
     
     lower_gray2 = np.array([0, 0, 0])
-    upper_gray2 = np.array([180, 30, 60])
+    upper_gray2 = np.array([180, 100, 80])
 
     # Создаем маски для темно-серого цвета
     mask1 = cv2.inRange(hsv, lower_gray1, upper_gray1)
