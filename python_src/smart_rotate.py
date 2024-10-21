@@ -91,11 +91,11 @@ def detect_perspective_x(image,ret):
 def rotate():
     go = RobotDirection()
     cap = cv2.VideoCapture(0)
-    pid = PIDController(0.25,0.1,0,320)
+    pid = PIDController(0.25,0.2,0,320)
     lim = 30
     result = cv2.VideoWriter('it worked1.avi',
                          cv2.VideoWriter_fourcc(*'XVID'), 
-                         5, (640*2,460*2),True)
+                         20, (640*2,460*2),True)
 
     # try:
     for i in range(1000):

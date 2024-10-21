@@ -187,11 +187,6 @@ class CTRL_Servo():
             self.set_pose(self.HIGH_S1, self.HIGH_S2)
             time.sleep(0.2)
 
-
-
-control_s = CTRL_Servo()
-
-control_s.standart_pose()
 #time.sleep(1)
 # control_s.hit()
 

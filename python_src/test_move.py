@@ -123,9 +123,9 @@ class RobotDirection(object):
 		self.m3m4_forward() # left? 
 		self.m1m2_forward() # right? 
 	
-	def follow_till_wall(self,dist,s,ul):
-		n = 3
-		speed = 60
+	def follow_till_wall(self,dist,s,ul,infr):
+		n = 4
+		speed = 40
 
 		if s=="l":
 			ul.rotate_sensor_l()
@@ -136,7 +136,7 @@ class RobotDirection(object):
 		arr = [ul.get_distance() for i in range(n)]
 		m = sum(arr)/n
 		
-		while m > dist+20:
+		while (m > dist+20) and infr.get_data_l() and infr.get_data_r():
 			self.forward_with_angle(speed,0)
 			arr.append(ul.get_distance())
 			m += arr[-1]/n
@@ -146,20 +146,22 @@ class RobotDirection(object):
 
 		self.stop()
 
-	def follow_wall(self,dist,s,ul):
-		n = 3
-		# kp = 1
-		# kd = 3
-		kp = 2
-		kd = 5
-		speed = 60
-		angle_lim = 30
+	def follow_wall(self,dist,s,ul,infr):
+		n = 4
+
+		kp = 1.2
+		kd = 1.7
+		k_prev = 0.2
+
+		speed = 35
+		angle_lim = 25
 
 		if s == "r":
 			kp = -kp
 			kd = -kd
+			k_prev = -k_prev
 		
-		self.follow_till_wall(dist,s,ul)
+		self.follow_till_wall(dist,s,ul,infr)
 
 		arr = [ul.get_distance() for i in range(n)]
 		m = sum(arr)/n
@@ -170,9 +172,10 @@ class RobotDirection(object):
 		# flag1, flag2 = 0,0
 		# sign = 1
 		# change_state = 0
-		while (abs(m_d)<10):
-			#print(m_d)
-			error_correct = (dist-m)*kp+m_d*kd
+		err_prev = 0
+		while (m_d>-10) and (m<dist*3) and infr.get_data_l() and infr.get_data_r():
+			print(m_d,m,)
+			error_correct = (dist-m)*kp+m_d*kd-k_prev*err_prev
 			err = max(-angle_lim, min(error_correct,angle_lim))
 
 			# if m>50 and flag1==0:
@@ -186,6 +189,7 @@ class RobotDirection(object):
 			# 	sign = sign*-1
 
 			self.forward_with_angle(speed,err)
+			err_prev = err
 			print("angle:", round(err),"dist:",m, "diff:",m_d )
 			new_d = ul.get_distance()
 			if new_d == -1:
@@ -198,7 +202,7 @@ class RobotDirection(object):
 				m_d += diff[-1]/n
 				m_d -= diff.pop(0)/n
 		self.stop()
-		print(m_d, m)
+		#print(m_d, m)
 		#print(arr, diff)
 		#print("stopped")
 
@@ -249,11 +253,14 @@ class RobotDirection(object):
 
 
 ul = Ultrasonic()
+infr = Infrared()
 
 go = RobotDirection()
 
-# go.follow_wall(20,"l",ul)
-# #go.gentle_move()
+# go.follow_wall(20,"l",ul,infr)
+
+
+# go.gentle_move()
 
 # go = RobotDirection()
 # go.forward_with_angle(100, 0)

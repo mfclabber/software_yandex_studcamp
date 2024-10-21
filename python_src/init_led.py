@@ -17,9 +17,9 @@ pw = Power()
 
         #time.sleep(1)
 #time.sleep(10)
-led.green_team_both_led()
+#led.green_team_both_led()
 #led.red_team_second_led()
-#led.red_team_both_led()
+led.red_team_both_led()
 # led.off_both_led()
 #led.rainbow(1)
 # while True:
