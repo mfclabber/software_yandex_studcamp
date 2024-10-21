@@ -1,7 +1,5 @@
 import numpy as np
 import cv2 as cv
-import time 
-
 
 def edge_dilated(img, num = 0):
     # num номер варианта обработки изображеняи
@@ -104,8 +102,8 @@ def rotate_frame(frame, angle):
 
 def undistort_frame(frame):
     camera_matrix = np.array([[1.20467414e+03, 0.00000000e+00, 9.07854974e+02], 
-                          [0.00000000e+00, 1.20123843e+03, 5.52728845e+02], 
-                          [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
+                        [0.00000000e+00, 1.20123843e+03, 5.52728845e+02], 
+                        [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
     dist_coeffs = np.array([-0.41728863,  0.22615515, -0.00167113,  0.00549296, -0.03307888])
     h, w = frame.shape[:2]
     new_camera_matrix, roi = cv.getOptimalNewCameraMatrix(camera_matrix, dist_coeffs, (w, h), 1, (w, h))
@@ -118,40 +116,3 @@ def undistort_frame(frame):
     undistorted_frame = undistorted_frame[y:y+h, x:x+w]
 
     return undistorted_frame
-
-
-cap = cv.VideoCapture('/home/sruwer/python_opencv_venv/jupyter-venv/new_video/output_left_another_roatate_1.avi')
-
-angle = 3.3
-
-ret, frame = cap.read()
-
-prev_frame_time = 0
-new_frame_time = 0
-    
-while cap.isOpened():
-    ret, frame = cap.read()
-    if not ret:
-        break
-
-    new_frame_time = time.time()
-    fps = 1 / (new_frame_time - prev_frame_time)
-    prev_frame_time = new_frame_time
-    fps_text = f"FPS: {int(fps)}"
-    
-    frame = undistort_frame(frame)
-
-    # frame = rotate_frame(frame, angle)
-
-    print(frame.shape[:2])
-
-    frame = edge_dilated(frame, 0)
-    
-    cv.putText(frame, fps_text, (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv.LINE_AA)
-    cv.imshow('Frame',frame)
-    
-    if cv.waitKey(1) & 0xFF == ord('q'):
-        break
-
-cap.release()
-cv.destroyAllWindows()
