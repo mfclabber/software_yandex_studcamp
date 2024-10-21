@@ -45,7 +45,7 @@ def YOLO_UP_CAM(rtsp_url):
     print("Успешно подключено к видеопотоку.")
 
     try:
-        model = YOLO("/home/sruwer/Downloads/best_12.pt")  # Убедитесь, что файл best.pt находится в рабочей директории
+        model = YOLO("python_src/wight_up_cam/best_12.pt")  # Убедитесь, что файл best.pt находится в рабочей директории
     except Exception as e:
         print(f"Ошибка загрузки модели YOLO: {e}")
         cap.release()

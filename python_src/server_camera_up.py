@@ -5,7 +5,6 @@ import time
 import numpy as np
 
 
-
 # Настройки сервера
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind(('', 10000))  # IP-адрес Raspberry Pi и порт 10000

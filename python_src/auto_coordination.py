@@ -279,16 +279,19 @@ class Coordinator:
             
             
             ### КОСТЫЛЬ (проезжаем еще немного +- вглубь клетки)
-            self.go.forward_with_angle(45,0)
-            time.sleep(1)
             self.go.stop()
+            time.sleep(0.3)
+            self.go.forward_with_angle(45,0)
+            time.sleep(0.5)
+            self.go.stop()
+            time.sleep(0.3)
 
             # Продвигаем робота в графе
             self.move_in_graph()
     
 
     def rotate(self,dir):
-        self.go.forward_with_angle(0,dir*80)
+        self.go.forward_with_angle(0,dir*90)
         time.sleep(0.5)
         self.go.stop()
         self.rotate_in_graph(dir)
