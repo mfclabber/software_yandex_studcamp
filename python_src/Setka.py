@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+from frame_edit_func import rotate_frame
+
 
 def setka(list_of_point, image):
     """
@@ -40,10 +42,9 @@ def setka(list_of_point, image):
     #cropped_image = image[:, 270:1520]
 
     # Поворот изображения на 2 градуса против часовой стрелки
-    rotated_image = rotate_image(image, 1)
+    angle = 2.5
+    rotated_image = rotate_frame(image, angle )
 
-    # Уменьшение изображения в 2 раза
-    small_image = cv2.resize(rotated_image, (rotated_image.shape[1], rotated_image.shape[0]))
 
     # # Задаем блоки с фиксированными координатами для 5x5 сетки
     #   A   B   C   D   E   F
@@ -66,10 +67,10 @@ def setka(list_of_point, image):
     # a = 16; b = 75; c = 170; d = 280; e = 380; f = 430
 
        # Координаты столбцов
-    A = 24*2; B = 160*2; C = 250*2; D = 365*2; E = 450*2; F = 580*2
+    A = 139; B = 397; C = 583; D = 822; E = 1002; F = 1229
 
     # Координаты строк
-    a = 16*2; b = 75*2; c = 170*2; d = 280*2; e = 380*2; f = 430*2
+    a = 49; b = 166; c = 384; d = 588; e = 784; f = 885
 
     blocks = [
         (A, a, B, b), (B, a, C, b), (C, a, D, b), (D, a, E, b), (E, a, F, b),
@@ -80,17 +81,21 @@ def setka(list_of_point, image):
     ]
 
     # Рисуем сетку с блоками нестандартных размеров
-    grid_image, start_points, end_points = draw_grid_with_custom_blocks(small_image, blocks)
+    grid_image, start_points, end_points = draw_grid_with_custom_blocks(rotated_image, blocks)
 
     # Случайная точка, для которой нужно найти сектор
     
     points = []
     list_of_point_with_pos = [_ for _ in list_of_point]
     for i in range(len(list_of_point)):
-        # print("point ",list_of_point[i])
+        #print("point ",list_of_point[i])
         points.append(find_grid_sector_custom_blocks(blocks, list_of_point[i]))
-        _x = (points[i][0])%5
-        _y = (points[i][0])//5
+        if points[i] == None:
+            continue
+        print('points ',points)
+        print(points[i])
+        _x = points[i][0] % 5
+        _y = points[i][0] // 5
         list_of_point_with_pos[i].append(_x)
         list_of_point_with_pos[i].append(_y)
         
@@ -107,9 +112,9 @@ def setka(list_of_point, image):
                 grid_matrix[p[0]].append(p[1])
 
     # Выводим изображение с сеткой и точкой
-    # cv2.imshow('Final Image with Grid and Random Points', grid_image)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+    cv2.imshow('Final Image with Grid and Random Points', grid_image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
     # Вывод матрицы с отмеченным сектором
     # print("Сетка с отмеченными секторами:")

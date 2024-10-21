@@ -17,11 +17,16 @@ ID2LABEL_UPCAM = dict([
 
 
 rtsp_url = "/home/sruwer/python_opencv_venv/jupyter-venv/output_left_data_another_combination_1.avi"
-#rtsp_url = "rtsp://Admin:rtf123@192.168.2.250:554/1/1"
+rtsp_url = "rtsp://Admin:rtf123@192.168.2.250:554/1/1"
 
 frame, list_of_points, annotated_frame = YOLO_UP_CAM(rtsp_url)
 
-# print(list_of_points)
+print(list_of_points)
+
+
+cv.imshow('YOLO Detected Frame', annotated_frame)
+cv.waitKey(0)
+cv.destroyAllWindows()
 
 """
     robot_pos - позиция робота на сетке в виде [x,y]
@@ -36,8 +41,6 @@ frame, list_of_points, annotated_frame = YOLO_UP_CAM(rtsp_url)
 grid_matrix, list_of_points_with_pos = setka(list_of_points, frame)
 
 #print(grid_matrix)
-# cv.imshow('YOLO Detected Frame', annotated_frame)
-# cv.waitKey(0)
 """
     list_of_points_with_pos
     [x_centr, y_centr, class, x_pos, y_pos]
