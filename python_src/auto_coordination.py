@@ -338,7 +338,7 @@ class Coordinator:
                             side_next = "l"
                     self.go.follow_till_wall(40,side_next,self.sonic)
                 else:
-                    self.go.follow_wall(15,side,self.sonic)
+                    self.go.follow_wall(18,side,self.sonic)
             
             
             ### КОСТЫЛЬ (проезжаем еще немного +- вглубь клетки)
@@ -495,10 +495,11 @@ class Coordinator:
 
         for x in range(5):
             for y in range(5):
-                if not (1 in self.field_map[x][y].walls) and x<4:
-                    graph.add_edge(x*5+y,(x+1)*5+y)
-                if not (0 in self.field_map[x][y].walls) and y<4:
-                    graph.add_edge(x*5+y,x*5+y+1)
+                if (y != 2) or (x != 2):
+                    if not (1 in self.field_map[x][y].walls) and x<4:
+                        graph.add_edge(x*5+y,(x+1)*5+y)
+                    if not (0 in self.field_map[x][y].walls) and y<4:
+                        graph.add_edge(x*5+y,x*5+y+1)
         for edge in graph.edges:
             print(edge)
         return graph

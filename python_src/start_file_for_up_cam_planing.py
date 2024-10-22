@@ -81,12 +81,12 @@ def UP_CAM(color = 'red', show_flag = False):
     3 - left
    """
     robot_dir = None
-    if robot_pos == [0,4]:
-        robot_dir = 0
-    elif robot_dir == [4,0]:
+    if [0,4] in robot_pos:
         robot_dir = 2
+    elif[4,0] in robot_pos:
+        robot_dir = 0
 
     # параметры котоыре надо передать в класс Тимура 
-    return(robot_pos, base_pos, robot_dir ,rg_pos, cube_pos, walls_conf)
+    return(robot_pos, robot_dir, base_pos ,rg_pos, cube_pos, walls_conf)
 
 # UP_CAM('green')

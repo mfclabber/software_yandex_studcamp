@@ -184,8 +184,8 @@ class Ultrasonic(object):
 		
 
 
-# ult = Ultrasonic()
-# #ult.rotate_sensor_r()
+ult = Ultrasonic()
+ult.rotate_sensor_l()
 # time_1 = 0
 # while True:
 #  	time_1 += 1

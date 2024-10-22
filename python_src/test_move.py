@@ -132,7 +132,7 @@ class RobotDirection(object):
 		arr = [ul.get_distance() for i in range(n)]
 		m = sum(arr)/n
 		
-		while (m > dist+20) and gpio.digital_read(gpio.IR_M):
+		while (m > dist+20) and gpio.digital_read(gpio.IR_R):
 			self.forward_with_angle(speed,0)
 			arr.append(ul.get_distance())
 			m += arr[-1]/n
@@ -150,7 +150,7 @@ class RobotDirection(object):
 		k_prev = 0.2
 
 		speed = 35
-		angle_lim = 20
+		angle_lim = 15
 
 		if s == "r":
 			kp = -kp
@@ -169,7 +169,7 @@ class RobotDirection(object):
 		# sign = 1
 		# change_state = 0
 		err_prev = 0
-		while (m_d>-10) and gpio.digital_read(gpio.IR_M):
+		while (m_d>-10) and gpio.digital_read(gpio.IR_R) and (m<dist*3):
 			print(m_d,m,)
 			error_correct = (dist-m)*kp+m_d*kd-k_prev*err_prev
 			err = max(-angle_lim, min(error_correct,angle_lim))
@@ -203,10 +203,10 @@ class RobotDirection(object):
 		#print("stopped")
 
 
-# ul = Ultrasonic()
-# infr = Infrared()
+#ul = Ultrasonic()
+#infr = Infrared()
 
-# go = RobotDirection()
+#go = RobotDirection()
 
 # go.follow_wall(20,"l",ul,infr)
 
@@ -214,8 +214,8 @@ class RobotDirection(object):
 # go.gentle_move()
 
 # go = RobotDirection()
-# go.forward_with_angle(0, 100)
-# time.sleep(1)
+# go.forward_with_angle(100, 0)
+# time.sleep(20)
 # go.forward_with_angle(75, 0)
 # # go.reverse(100)
 # time.sleep(5)
