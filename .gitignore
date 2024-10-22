@@ -1,1 +1,6 @@
 python_src/__pycache__/*
+python_src/control/__pycache__/*
+python_src/perception/src/__pycache__/*
+*.png
+yolov5/*
+*.avi

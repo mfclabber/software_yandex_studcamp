@@ -118,32 +118,33 @@ def find_blue_object(frame):
 def find_gray_box(frame, min_area=500, max_area=10000):
     # Обрезаем верхнюю часть изображения
     height, width = frame.shape[:2]
-    crop_fraction = 0.6
+    crop_fraction = 0.8
     frame = frame[:int(height * crop_fraction), :]
 
     # Преобразуем изображение в цветовое пространство HSV
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    # Определяем диапазоны для темно-серого цвета (несколько диапазонов для разных оттенков)
-    lower_gray1 = np.array([0, 0, 0])
-    upper_gray1 = np.array([180, 100, 50])
-    
-    lower_gray2 = np.array([0, 0, 0])
-    upper_gray2 = np.array([180, 100, 80])
+    # Применяем CLAHE для увеличения контрастности
+    lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    lab[..., 0] = clahe.apply(lab[..., 0])
+    frame = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    # Создаем маски для темно-серого цвета
-    mask1 = cv2.inRange(hsv, lower_gray1, upper_gray1)
-    mask2 = cv2.inRange(hsv, lower_gray2, upper_gray2)
+    # Определяем узкие диапазоны для темно-серого цвета в HSV
+    lower_gray = np.array([0, 0, 0])
+    upper_gray = np.array([180, 50, 60])  # Уменьшили верхнюю границу яркости для темного серого
 
-    # Объединяем маски
-    mask = cv2.bitwise_or(mask1, mask2)
+    # Создаем маску для темно-серого цвета
+    mask = cv2.inRange(hsv, lower_gray, upper_gray)
 
     # Применяем морфологическую обработку для удаления шумов
-    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
-    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
+    kernel = np.ones((5, 5), np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
 
     # Применяем Canny для улучшения контуров
-    edges = cv2.Canny(mask, 50, 150)
+    edges = cv2.Canny(mask, 20, 150)
 
     # Находим контуры
     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -151,7 +152,7 @@ def find_gray_box(frame, min_area=500, max_area=10000):
     best_bbox = None
     best_area = 0
 
-    # Фильтруем по площади и анализируем соотношение сторон
+    # Фильтруем по площади, анализируем соотношение сторон и форму
     for contour in contours:
         area = cv2.contourArea(contour)
 
@@ -159,8 +160,8 @@ def find_gray_box(frame, min_area=500, max_area=10000):
             x, y, w, h = cv2.boundingRect(contour)
             aspect_ratio = w / float(h)
 
-            # Фильтрация по форме: корзина вероятно имеет соотношение сторон близкое к 1
-            if 0.8 < aspect_ratio < 1.2 and area > best_area:
+            # Проверяем форму (квадратоподобная) и площадь
+            if 0.8 < aspect_ratio < 3 and area > best_area:
                 best_bbox = (x, y, w, h)
                 best_area = area
 
@@ -228,93 +229,19 @@ def calculate_speed(current_position, target_position, K1):
  
     return speed
 
+pid = PIDController(Kp=0.15, Ki=0.0, Kd=0.03142
+                    , setpoint=320)
 
-current_position = np.array([0.0, 0.0])
-position_with_label = np.array([0.0, 0.0])
-coordinates_object = 320
-    
-if __name__ == "__main__":
-
+def follow2cube():
     cap = cv2.VideoCapture(0)
     go = RobotDirection()
     control_s = CTRL_Servo()
 
     control_s.standart_pose()
 
-    pid = PIDController(Kp=0.15, Ki=0.0, Kd=0.03, setpoint=320)
     try:
         # CUBE
-        # while coordinates_object != None:
-        #     ret, frame = cap.read()
-        #     frame = align_histogram(frame)
-        #     if not ret:
-        #         break
-
-        #     coordinates_object = find_bright_green_object(frame)
-
-        #     if coordinates_object != None:
-        #         x, y, h, w = coordinates_object 
-        #         position_with_label = x
-
-        #     _, buffer = cv2.imencode('.jpg', frame)
-        #     data = buffer.tobytes()
-
-        #     # print(coordinates_object)
-
-        #     # if type(position_with_label) == int:
-        #     #     steering_angle = 10
-        #     #     speed = 0
-        #     # else:
-        #     steering_angle = float(calculate_steering_angle(position_with_label))
-        #     speed = 40
-        #         # speed = calculate_speed(current_position, position_with_label, K1)
-        #     print(steering_angle, speed)
-        #     # print()
-
-        #     go.forward_with_angle(speed, steering_angle)
-
-
-        # BUTTON
-        # object_is_find = False
-
-        # while object_is_find != True:
-        #     ret, frame = cap.read()
-        #     frame = align_histogram(frame)
-        #     if not ret:
-        #         break
-
-        #     coordinates_object = find_blue_object(frame)
-
-        #     if coordinates_object != None:
-        #         x, y, h, w = coordinates_object 
-        #         position_with_label = x
-
-        #     _, buffer = cv2.imencode('.jpg', frame)
-        #     data = buffer.tobytes()
-
-        #     # print(coordinates_object)
-
-        #     # if type(position_with_label) == int:
-        #     #     steering_angle = 10
-        #     #     speed = 0
-        #     # else:
-        #     steering_angle = float(calculate_steering_angle(position_with_label))
-        #     speed = 20
-        #         # speed = calculate_speed(current_position, position_wiwwwwwwwwth_label, K1)
-        #     print(steering_angle, speed)
-        #     # print()
-
-        #     go.forward_with_angle(speed, steering_angle)
-
-        #     if gpio.digital_read(gpio.IR_M) == 0:
-        #         go.stop()
-        #         object_is_find = True
-        #         break
-
-        # control_s.push_button()
-
-
-        # GET CUBE AND GET DOWN TO BOX
+        coordinates_object = 320
         while coordinates_object != None:
             ret, frame = cap.read()
             frame = align_histogram(frame)
@@ -331,50 +258,19 @@ if __name__ == "__main__":
             data = buffer.tobytes()
 
             steering_angle = float(calculate_steering_angle(position_with_label))
-            speed = 30
+            speed = 20
 
             print(steering_angle, speed)
             go.forward_with_angle(speed, steering_angle)
 
             if gpio.digital_read(gpio.IR_M) == 0:
-                time.sleep(0.1)
+                time.sleep(0.4)
                 go.stop()
-                object_is_find = True
                 break
-        
+
+        # time.sleep(1)
         go.stop()
-        time.sleep(0.5)
         control_s.take_cube()
-
-        # object_is_find = False
-        # while object_is_find != True:
-        #     ret, frame = cap.read()
-        #     frame = align_histogram(frame)
-        #     if not ret:
-        #         break
-
-        #     coordinates_object = find_gray_box(frame)
-
-        #     if coordinates_object != None:
-        #         x, y, h, w = coordinates_object 
-        #         position_with_label = x
-
-        #     _, buffer = cv2.imencode('.jpg', frame)
-        #     data = buffer.tobytes()
-
-        #     steering_angle = float(calculate_steering_angle(position_with_label))
-        #     speed = 30
-
-        #     print(steering_angle, speed)
-        #     go.forward_with_angle(speed, steering_angle)
-
-        #     if gpio.digital_read(gpio.IR_L) == 0 or gpio.digital_read(gpio.IR_R) == 0:
-        #         time.sleep(0.1)
-        #         go.stop()
-        #         object_is_find = True
-        #         break
-
-        control_s.drop_object()
         
 
     except KeyboardInterrupt:
@@ -382,8 +278,218 @@ if __name__ == "__main__":
 
     go.stop()
 
-    # control_s.push_button()
-    control_s.standart_pose()
-    # control_s.take_cube()
-    # time.sleep(2)
-    # control_s.drop_object()
+
+current_position = np.array([0.0, 0.0])
+position_with_label = np.array([0.0, 0.0])
+coordinates_object = 320
+
+
+coordinates = []
+cap = cv2.VideoCapture(0)
+go = RobotDirection()
+control_s = CTRL_Servo()
+
+control_s.standart_pose()
+
+pid = PIDController(Kp=0.15, Ki=0.0, Kd=0.03, setpoint=320)
+avg_coordinates = []
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
+
+    frame = align_histogram(frame)
+
+    # Детектируем объект 10 раз
+    for i in range(30):
+        coordinates_gray_box = find_gray_box(frame)
+        if coordinates_gray_box is not None:
+            coordinates.append(coordinates_gray_box)
+
+    if len(coordinates) == 30:
+        # Вычисляем средние значения
+        avg_coordinates = np.mean(coordinates, axis=0).astype(int)
+        x, y, w, h = avg_coordinates
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+        # Очищаем список для следующего цикла
+        coordinates = []
+
+    _, buffer = cv2.imencode('.jpg', frame)
+    data = buffer.tobytes()
+
+    steering_angle = float(calculate_steering_angle(avg_coordinates))
+    speed = 20
+
+    print(steering_angle, speed)
+    go.forward_with_angle(speed, steering_angle)
+
+    if gpio.digital_read(gpio.IR_L) == 0 or gpio.digital_read(gpio.IR_R) == 0:
+        time.sleep(0.1)
+        go.stop()
+        object_is_find = True
+        break
+
+control_s.drop_object()
+
+
+# current_position = np.array([0.0, 0.0])
+# position_with_label = np.array([0.0, 0.0])
+# coordinates_object = 320
+
+# follow2cube()
+    
+# if __name__ == "__main__":
+
+#     cap = cv2.VideoCapture(0)
+#     go = RobotDirection()
+#     control_s = CTRL_Servo()
+
+#     control_s.standart_pose()
+
+#     pid = PIDController(Kp=0.15, Ki=0.0, Kd=0.03, setpoint=320)
+#     try:
+#         # CUBE
+#         # while coordinates_object != None:
+#         #     ret, frame = cap.read()
+#         #     frame = align_histogram(frame)
+#         #     if not ret:
+#         #         break
+
+#         #     coordinates_object = find_bright_green_object(frame)
+
+#         #     if coordinates_object != None:
+#         #         x, y, h, w = coordinates_object 
+#         #         position_with_label = x
+
+#         #     _, buffer = cv2.imencode('.jpg', frame)
+#         #     data = buffer.tobytes()
+
+#         #     # print(coordinates_object)
+
+#         #     # if type(position_with_label) == int:
+#         #     #     steering_angle = 10
+#         #     #     speed = 0
+#         #     # else:
+#         #     steering_angle = float(calculate_steering_angle(position_with_label))
+#         #     speed = 40
+#         #         # speed = calculate_speed(current_position, position_with_label, K1)
+#         #     print(steering_angle, speed)
+#         #     # print()
+
+#         #     go.forward_with_angle(speed, steering_angle)
+
+
+#         # BUTTON
+#         # object_is_find = False
+
+#         # while object_is_find != True:
+#         #     ret, frame = cap.read()
+#         #     frame = align_histogram(frame)
+#         #     if not ret:
+#         #         break
+
+#         #     coordinates_object = find_blue_object(frame)
+
+#         #     if coordinates_object != None:
+#         #         x, y, h, w = coordinates_object 
+#         #         position_with_label = x
+
+#         #     _, buffer = cv2.imencode('.jpg', frame)
+#         #     data = buffer.tobytes()
+
+#         #     # print(coordinates_object)
+
+#         #     # if type(position_with_label) == int:
+#         #     #     steering_angle = 10
+#         #     #     speed = 0
+#         #     # else:
+#         #     steering_angle = float(calculate_steering_angle(position_with_label))
+#         #     speed = 20
+#         #         # speed = calculate_speed(current_position, position_wiwwwwwwwwth_label, K1)
+#         #     print(steering_angle, speed)
+#         #     # print()
+
+#         #     go.forward_with_angle(speed, steering_angle)
+
+#         #     if gpio.digital_read(gpio.IR_M) == 0:
+#         #         go.stop()
+#         #         object_is_find = True
+#         #         break
+
+#         # control_s.push_button()
+
+
+#         # GET CUBE AND GET DOWN TO BOX
+#         while coordinates_object != None:
+#             ret, frame = cap.read()
+#             frame = align_histogram(frame)
+#             if not ret:
+#                 break
+
+#             coordinates_object = find_red_cube(frame)
+
+#             if coordinates_object != None:
+#                 x, y, h, w = coordinates_object 
+#                 position_with_label = x
+
+#             _, buffer = cv2.imencode('.jpg', frame)
+#             data = buffer.tobytes()
+
+#             steering_angle = float(calculate_steering_angle(position_with_label))
+#             speed = 30
+
+#             print(steering_angle, speed)
+#             go.forward_with_angle(speed, steering_angle)
+
+#             if gpio.digital_read(gpio.IR_M) == 0:
+#                 time.sleep(0.1)
+#                 go.stop()
+#                 object_is_find = True
+#                 break
+        
+#         go.stop()
+#         time.sleep(0.5)
+#         control_s.take_cube()
+
+#         # object_is_find = False
+#         # while object_is_find != True:
+#         #     ret, frame = cap.read()
+#         #     frame = align_histogram(frame)
+#         #     if not ret:
+#         #         break
+
+#         #     coordinates_object = find_gray_box(frame)
+
+#         #     if coordinates_object != None:
+#         #         x, y, h, w = coordinates_object 
+#         #         position_with_label = x
+
+#         #     _, buffer = cv2.imencode('.jpg', frame)
+#         #     data = buffer.tobytes()
+
+#         #     steering_angle = float(calculate_steering_angle(position_with_label))
+#         #     speed = 30
+
+#         #     print(steering_angle, speed)
+#         #     go.forward_with_angle(speed, steering_angle)
+
+#         #     if gpio.digital_read(gpio.IR_L) == 0 or gpio.digital_read(gpio.IR_R) == 0:
+#         #         time.sleep(0.1)
+#         #         go.stop()
+#         #         object_is_find = True
+#         #         break
+
+#         control_s.drop_object()
+        
+
+#     except KeyboardInterrupt:
+#         go.stop()
+
+#     go.stop()
+
+#     # control_s.push_button()
+#     control_s.standart_pose()
+#     # control_s.take_cube()
+#     # time.sleep(2)
+#     # control_s.drop_object()

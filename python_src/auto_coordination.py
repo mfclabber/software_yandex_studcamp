@@ -1,11 +1,9 @@
-
 import numpy as np
 from test_move import RobotDirection
 from xr_ultrasonic import Ultrasonic
 import time
 from path_planning import Graph, shortest_path
 from smart_rotate import finish_rotate
-from xr_infrared import Infrared
 import cv2
 
 
@@ -58,7 +56,7 @@ class Coordinator:
     Класс координатора внутри графа
     '''
 
-    def __init__(self, robot_pos, robot_dir, base_pos, rg_pos, cube_pos, walls_conf, sonic, go,infr):
+    def __init__(self, robot_pos, robot_dir, base_pos, rg_pos, cube_pos, walls_conf, sonic, go):
 
         '''
         Инициализирует координатор
@@ -75,9 +73,20 @@ class Coordinator:
             go - объект класса RobotDirection для движения
         '''
         
+        robot_pos = robot_pos[0]
+        robot_pos[1] = 4-robot_pos[1]
+        robot_dir = robot_dir
+        base_pos = base_pos[0]
+        base_pos[1] = 4-base_pos[1]
+        rg_pos = rg_pos[0]
+        rg_pos[1] = 4-rg_pos[1]
+        cube_pos = cube_pos[0]
+        cube_pos[1] = 4-cube_pos[1]
+        
+        
+
         self.go = go
         self.sonic = sonic
-        self.infr = infr
 
         # Пределы расстояния, на которых может 
         # находиться внутренняя стенка 
@@ -191,6 +200,60 @@ class Coordinator:
         self.robot_dir = (self.robot_dir+direction)%4
         self.next_point = self.robot_pos+self.directions[self.robot_dir]
     
+
+
+    def first_moves(self):
+
+        '''
+        Начальный подъезд к стенке
+        '''
+
+        self.come_to_wall(1)
+    
+
+
+    def return_to_wall(self):
+        
+        '''
+        Вернуться к стенке после забора кубика
+        '''
+
+        if (self.cube_pos[0] == 0) or (self.cube_pos[0] == 4):
+            cap = cv2.VideoCapture(0)
+            self.rotate(-1)
+            finish_rotate(self.go,cap)
+            self.come_to_wall(-1)
+            cap.release()
+
+
+    def come_to_wall(self,dir):
+        
+        '''
+        Передвижение в удобную точку на карте
+        '''
+
+        self.go.forward_with_angle(50,0)
+        time.sleep(1)
+        self.go.stop()
+        time.sleep(0.3)
+
+        self.go.forward_with_angle(0,dir*90)
+        time.sleep(0.5)
+        self.go.stop()
+        time.sleep(0.3)
+
+        self.go.follow_till_wall(20,'r',self.sonic)
+        self.go.stop()
+        time.sleep(0.3)
+
+        self.go.forward_with_angle(0,-dir*90)
+        time.sleep(0.5)
+        self.go.stop()
+        time.sleep(0.3)
+
+        self.move_in_graph()
+
+
     def move_in_graph(self):
         
         '''
@@ -249,7 +312,7 @@ class Coordinator:
                         side = "l"
                     elif (i-self.robot_dir)%4 == 3:
                         side = "r"
-                self.go.follow_till_wall(40,side,self.sonic,self.infr)
+                self.go.follow_till_wall(40,side,self.sonic)
 
             else:
 
@@ -273,16 +336,16 @@ class Coordinator:
                             side_next = "r"
                         elif (i-self.robot_dir)%4 == 3:
                             side_next = "l"
-                    self.go.follow_till_wall(40,side_next,self.sonic,self.infr)
+                    self.go.follow_till_wall(40,side_next,self.sonic)
                 else:
-                    self.go.follow_wall(20,side,self.sonic,self.infr)
+                    self.go.follow_wall(15,side,self.sonic)
             
             
             ### КОСТЫЛЬ (проезжаем еще немного +- вглубь клетки)
             self.go.stop()
             time.sleep(0.3)
             self.go.forward_with_angle(45,0)
-            time.sleep(0.5)
+            time.sleep(0.7)
             self.go.stop()
             time.sleep(0.3)
 
@@ -297,27 +360,27 @@ class Coordinator:
         self.rotate_in_graph(dir)
 
     
-    def check_sonic(self):
+    # def check_sonic(self):
 
-        '''
-        Проверка ультразвуком наличия стенки в удалении (для определения внутренних стен)
-        '''
+    #     '''
+    #     Проверка ультразвуком наличия стенки в удалении (для определения внутренних стен)
+    #     '''
 
-        for i in self.field_map[self.robot_pos[0]][self.robot_pos[1]].walls:
-            print((i-self.robot_dir)%4)
-            print(i)
-            if (i-self.robot_dir)%4 == 1:
-                self.sonic.rotate_sensor_r()
-                break
-        else:
-            self.sonic.rotate_sensor_l()
-        time.sleep(1)
+    #     for i in self.field_map[self.robot_pos[0]][self.robot_pos[1]].walls:
+    #         print((i-self.robot_dir)%4)
+    #         print(i)
+    #         if (i-self.robot_dir)%4 == 1:
+    #             self.sonic.rotate_sensor_r()
+    #             break
+    #     else:
+    #         self.sonic.rotate_sensor_l()
+    #     time.sleep(1)
 
-        dist = self.sonic.get_distance()
-        print("SONIC:",dist)
-        if (dist < self.MAX_SONIC_MIDDLE_DIST) and (dist > self.MIN_SONIC_MIDDLE_DIST):
-            return 1
-        return 0
+    #     dist = self.sonic.get_distance()
+    #     print("SONIC:",dist)
+    #     if (dist < self.MAX_SONIC_MIDDLE_DIST) and (dist > self.MIN_SONIC_MIDDLE_DIST):
+    #         return 1
+    #     return 0
 
     def can_move(self):
         
@@ -327,7 +390,7 @@ class Coordinator:
         '''
 
         min_check = min(self.robot_pos+self.directions[self.robot_dir]) > -1
-        max_check = min(self.robot_pos+self.directions[self.robot_dir]) < 5
+        max_check = max(self.robot_pos+self.directions[self.robot_dir]) < 5
         return not(self.robot_dir in self.field_map[self.robot_pos[0]][self.robot_pos[1]].walls) and min_check and max_check
 
 
@@ -499,9 +562,53 @@ class Coordinator:
                 self.rotate(-1)
         cap.release()
     
+
     def go_to(self,point):
+
+        '''
+        Поехать в координату
+        '''
+
         path = self.calculate_path(point)
         self.execute_path(path)
+    
+
+    
+    def go_to_cube(self):
+
+        '''
+        Подъезд к кубу
+        '''
+
+        path1 = self.calculate_path(self.cube_pos)
+        path2 = self.calculate_path(self.cube_pos_e)
+
+        path = path1 if len(path2)>len(path1) else path2
+
+        if (self.cube_pos[0] == 0) or (self.cube_pos[0] == 4):
+            self.execute_path(path)
+            if (self.robot_dir == 0) or (self.robot_dir == 2):
+                self.rotate(-1)
+            
+        else:
+            path.pop()
+
+            self.execute_path(path)
+            self.move_in_graph()
+        
+
+
+    def go_to_base(self):
+
+        '''
+        Подъезд к базе
+        '''
+
+        path = self.calculate_path(self.base_pos)
+        path.pop()
+        self.execute_path(path)
+        self.move_in_graph()
+
 
     def show_field(self):
 
@@ -526,15 +633,16 @@ class Coordinator:
         print("next_pos = ",self.next_point)
 
 
-ult = Ultrasonic()
-go = RobotDirection()
-infr = Infrared()
+# ult = Ultrasonic()
+# go = RobotDirection()
 
-coordinator = Coordinator([4,0], 0, [2,4], [0,2], [4,0], [True,False], ult,go,infr)
+# coordinator = Coordinator([[0,4]], 0, [[2,4]], [[0,2]], [[4,4]], [False,False], ult,go)
+# coordinator.first_moves()
+# coordinator.return_to_wall()
 
-while True:
-    x,y = map(int,input().split())
-    coordinator.go_to(np.array([x,y]))
+# while True:
+#     x,y = map(int,input().split())
+#     coordinator.go_to(np.array([x,y]))
 
 # cap = cv2.VideoCapture(0)
 # while True:

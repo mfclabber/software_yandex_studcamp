@@ -4,7 +4,8 @@ import numpy as np
 
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_socket.bind(('192.168.2.217', 10000))  # IP-адрес Raspberry Pi и порт 10000
+# server_socket.bind(('192.168.2.217', 10000))  # IP-адрес Raspberry Pi и порт 10000
+server_socket.bind(('172.20.10.5', 10000))  # IP-адрес Raspberry Pi и порт 10000
 server_socket.listen(1)
 
 print("Ожидание подключения клиента...")
@@ -146,7 +147,7 @@ def mask_top_corners(frame, corner_fraction=0.2):
     frame_masked = cv2.bitwise_and(frame, frame, mask=mask)
 
     return frame_masked
-
+    
 def find_gray_box(frame, min_area=500, max_area=10000):
     # Обрезаем верхнюю часть изображения
     height, width = frame.shape[:2]
@@ -156,26 +157,27 @@ def find_gray_box(frame, min_area=500, max_area=10000):
     # Преобразуем изображение в цветовое пространство HSV
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    # Определяем диапазоны для темно-серого цвета (несколько диапазонов для разных оттенков)
-    lower_gray1 = np.array([0, 0, 0])
-    upper_gray1 = np.array([180, 120, 50])
-    
-    lower_gray2 = np.array([0, 0, 0])
-    upper_gray2 = np.array([180, 100, 80])
+    # Применяем CLAHE для увеличения контрастности
+    lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    lab[..., 0] = clahe.apply(lab[..., 0])
+    frame = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    # Создаем маски для темно-серого цвета
-    mask1 = cv2.inRange(hsv, lower_gray1, upper_gray1)
-    mask2 = cv2.inRange(hsv, lower_gray2, upper_gray2)
+    # Определяем узкие диапазоны для темно-серого цвета в HSV
+    lower_gray = np.array([0, 0, 0])
+    upper_gray = np.array([180, 50, 60])  # Уменьшили верхнюю границу яркости для темного серого
 
-    # Объединяем маски
-    mask = cv2.bitwise_or(mask1, mask2)
+    # Создаем маску для темно-серого цвета
+    mask = cv2.inRange(hsv, lower_gray, upper_gray)
 
     # Применяем морфологическую обработку для удаления шумов
-    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
-    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
+    kernel = np.ones((5, 5), np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
 
     # Применяем Canny для улучшения контуров
-    edges = cv2.Canny(mask, 50, 150)
+    edges = cv2.Canny(mask, 20, 150)
 
     # Находим контуры
     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -183,7 +185,7 @@ def find_gray_box(frame, min_area=500, max_area=10000):
     best_bbox = None
     best_area = 0
 
-    # Фильтруем по площади и анализируем соотношение сторон
+    # Фильтруем по площади, анализируем соотношение сторон и форму
     for contour in contours:
         area = cv2.contourArea(contour)
 
@@ -191,81 +193,49 @@ def find_gray_box(frame, min_area=500, max_area=10000):
             x, y, w, h = cv2.boundingRect(contour)
             aspect_ratio = w / float(h)
 
-            # Фильтрация по форме: корзина вероятно имеет соотношение сторон близкое к 1
-            if 0.8 < aspect_ratio < 1.2 and area > best_area:
+            # Проверяем форму (квадратоподобная) и площадь
+            if 0.8 < aspect_ratio < 3 and area > best_area:
                 best_bbox = (x, y, w, h)
                 best_area = area
 
     return best_bbox if best_bbox else None
-    
 
-def find_gray_mesh_box(frame):
-    # Преобразуем изображение в серый цвет
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+avg_coordinates = []
+coordinates = []
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
 
-    # Применяем CLAHE для улучшения контраста
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-    enhanced_gray = clahe.apply(gray)
+    frame = align_histogram(frame)
 
-    # Убираем шум с помощью GaussianBlur
-    blurred = cv2.GaussianBlur(enhanced_gray, (5, 5), 0)
+    # Детектируем объект 10 раз
+    for i in range(30):
+        coordinates_gray_box = find_gray_box(frame)
+        if coordinates_gray_box is not None:
+            coordinates.append(coordinates_gray_box)
 
-    # Используем детектор краев Canny для выявления сетчатой структуры
-    edges = cv2.Canny(blurred, 50, 150)
+    if len(coordinates) == 30:
+        # Вычисляем средние значения
+        avg_coordinates = np.mean(coordinates, axis=0).astype(int)
+        x, y, w, h = avg_coordinates
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-    # Применяем морфологическую обработку для усиления контуров
-    edges = cv2.dilate(edges, np.ones((3, 3), np.uint8), iterations=1)
+        # Очищаем список для следующего цикла
+        coordinates = []
 
-    # Находим контуры на изображении
-    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    _, buffer = cv2.imencode('.jpg', frame)
+    data = buffer.tobytes()
 
-    detected_boxes = []
+    client_socket.sendall(len(data).to_bytes(4, byteorder='big'))
+    client_socket.sendall(data)
 
-    for contour in contours:
-        area = cv2.contourArea(contour)
-        
-        # Фильтруем контуры по площади, чтобы исключить слишком маленькие или большие объекты
-        if 50 < area < 10000:  # Настроим пороги под твою задачу
-            x, y, w, h = cv2.boundingRect(contour)
-            aspect_ratio = w / float(h)
+    print(avg_coordinates)
 
-            # Фильтрация по соотношению сторон
-            if 0.8 < aspect_ratio < 1.2:  # Корзина может иметь почти квадратную форму
-                detected_boxes.append((x, y, w, h))
+# except BaseException:
 
-    # Если найдено несколько объектов, выбираем самый большой
-    if len(detected_boxes) > 0:
-        largest_box = max(detected_boxes, key=lambda box: box[2] * box[3])
-        return largest_box
-    else:
-        return None
-    
-    
-try:
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-
-        frame = align_histogram(frame)
-        coordinates_red_cube = find_gray_box(frame)
-
-        if coordinates_red_cube != None:
-            x, y, h, w = coordinates_red_cube
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
-        _, buffer = cv2.imencode('.jpg', frame)
-        data = buffer.tobytes()
-
-        client_socket.sendall(len(data).to_bytes(4, byteorder='big'))
-        client_socket.sendall(data)
-
-        print(coordinates_red_cube)
-
-except BaseException:
-
-    client_socket.close()
-    server_socket.close()
+#     client_socket.close()
+#     server_socket.close()
 
 
 cap.release()

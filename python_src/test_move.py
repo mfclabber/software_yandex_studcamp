@@ -5,11 +5,7 @@ import os
 import time
 import xr_gpio as gpio
 import numpy as np
-from xr_infrared import Infrared
 from xr_configparser import HandleConfig
-
-
-ir_sensor = Infrared()
 
 class RobotDirection(object):
 	def __init__(self):
@@ -123,20 +119,20 @@ class RobotDirection(object):
 		self.m3m4_forward() # left? 
 		self.m1m2_forward() # right? 
 	
-	def follow_till_wall(self,dist,s,ul,infr):
+	def follow_till_wall(self,dist,s,ul):
 		n = 4
 		speed = 40
 
-		if s=="l":
+		if s == "l":
 			ul.rotate_sensor_l()
-		else:
+		elif s == "r":
 			ul.rotate_sensor_r()
 		time.sleep(0.5)
 
 		arr = [ul.get_distance() for i in range(n)]
 		m = sum(arr)/n
 		
-		while (m > dist+20) and infr.get_data_l() and infr.get_data_r():
+		while (m > dist+20) and gpio.digital_read(gpio.IR_M):
 			self.forward_with_angle(speed,0)
 			arr.append(ul.get_distance())
 			m += arr[-1]/n
@@ -146,7 +142,7 @@ class RobotDirection(object):
 
 		self.stop()
 
-	def follow_wall(self,dist,s,ul,infr):
+	def follow_wall(self,dist,s,ul):
 		n = 4
 
 		kp = 1.2
@@ -161,7 +157,7 @@ class RobotDirection(object):
 			kd = -kd
 			k_prev = -k_prev
 		
-		self.follow_till_wall(dist,s,ul,infr)
+		self.follow_till_wall(dist,s,ul)
 
 		arr = [ul.get_distance() for i in range(n)]
 		m = sum(arr)/n
@@ -173,7 +169,7 @@ class RobotDirection(object):
 		# sign = 1
 		# change_state = 0
 		err_prev = 0
-		while (m_d>-10) and (m<dist*3) and infr.get_data_l() and infr.get_data_r():
+		while (m_d>-10) and gpio.digital_read(gpio.IR_M):
 			print(m_d,m,)
 			error_correct = (dist-m)*kp+m_d*kd-k_prev*err_prev
 			err = max(-angle_lim, min(error_correct,angle_lim))
@@ -206,51 +202,6 @@ class RobotDirection(object):
 		#print(arr, diff)
 		#print("stopped")
 
-	def gentle_move(self):
-		step_angle = 15
-		max_angle = 60
-		cur_angle = 0
-		stop = False
-		while (ir_sensor.get_data_m() == 0)and(cur_angle<max_angle):
-			if ir_sensor.get_data_m() == 1:
-				stop = True
-				break
-			cur_angle += step_angle
-			self.forward_with_angle(0, step_angle)
-			time.sleep(0.5)
-			self.stop()
-
-		while (ir_sensor.get_data_m() == 0)and(cur_angle>-max_angle):
-			if ir_sensor.get_data_m() == 1:
-				stop = True
-				break
-			cur_angle -= step_angle
-			self.forward_with_angle(0, -step_angle)
-			time.sleep(0.5)
-			self.stop()
-
-		if not stop:
-			self.reverse(10)
-			time.sleep(0.5)
-			self.stop()
-			while (ir_sensor.get_data_m == 0)and(cur_angle<max_angle):
-				if ir_sensor.get_data_m() == 1:
-					stop = True
-					break
-				cur_angle += step_angle
-				self.forward_with_angle(step_angle/2, step_angle)
-				time.sleep(0.5)
-				self.stop()
-
-			while (ir_sensor.get_data_m() == 0)and(cur_angle>-max_angle):
-				if ir_sensor.get_data_m() == 1:
-					stop = True
-					break
-				cur_angle -= step_angle
-				self.forward_with_angle(step_angle/2, step_angle)
-				time.sleep(0.5)
-				self.stop()
-
 
 # ul = Ultrasonic()
 # infr = Infrared()
@@ -265,7 +216,7 @@ class RobotDirection(object):
 # go = RobotDirection()
 # go.forward_with_angle(0, 100)
 # time.sleep(1)
-# # go.forward_with_angle(75, -20)
+# go.forward_with_angle(75, 0)
 # # go.reverse(100)
 # time.sleep(5)
 # go.forward_with_angle(50,-100)
