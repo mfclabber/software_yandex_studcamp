@@ -279,58 +279,58 @@ def follow2cube():
     go.stop()
 
 
-current_position = np.array([0.0, 0.0])
-position_with_label = np.array([0.0, 0.0])
-coordinates_object = 320
+# current_position = np.array([0.0, 0.0])
+# position_with_label = np.array([0.0, 0.0])
+# coordinates_object = 320
 
 
-coordinates = []
-cap = cv2.VideoCapture(0)
-go = RobotDirection()
-control_s = CTRL_Servo()
+# coordinates = []
+# cap = cv2.VideoCapture(0)
+# go = RobotDirection()
+# control_s = CTRL_Servo()
 
-control_s.standart_pose()
+# control_s.standart_pose()
 
-pid = PIDController(Kp=0.15, Ki=0.0, Kd=0.03, setpoint=320)
-avg_coordinates = []
-while True:
-    ret, frame = cap.read()
-    if not ret:
-        break
+# pid = PIDController(Kp=0.15, Ki=0.0, Kd=0.03, setpoint=320)
+# avg_coordinates = []
+# while True:
+#     ret, frame = cap.read()
+#     if not ret:
+#         break
 
-    frame = align_histogram(frame)
+#     frame = align_histogram(frame)
 
-    # Детектируем объект 10 раз
-    for i in range(30):
-        coordinates_gray_box = find_gray_box(frame)
-        if coordinates_gray_box is not None:
-            coordinates.append(coordinates_gray_box)
+#     # Детектируем объект 10 раз
+#     for i in range(30):
+#         coordinates_gray_box = find_gray_box(frame)
+#         if coordinates_gray_box is not None:
+#             coordinates.append(coordinates_gray_box)
 
-    if len(coordinates) == 30:
-        # Вычисляем средние значения
-        avg_coordinates = np.mean(coordinates, axis=0).astype(int)
-        x, y, w, h = avg_coordinates
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+#     if len(coordinates) == 30:
+#         # Вычисляем средние значения
+#         avg_coordinates = np.mean(coordinates, axis=0).astype(int)
+#         x, y, w, h = avg_coordinates
+#         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-        # Очищаем список для следующего цикла
-        coordinates = []
+#         # Очищаем список для следующего цикла
+#         coordinates = []
 
-    _, buffer = cv2.imencode('.jpg', frame)
-    data = buffer.tobytes()
+#     _, buffer = cv2.imencode('.jpg', frame)
+#     data = buffer.tobytes()
 
-    steering_angle = float(calculate_steering_angle(avg_coordinates))
-    speed = 20
+#     steering_angle = float(calculate_steering_angle(avg_coordinates))
+#     speed = 20
 
-    print(steering_angle, speed)
-    go.forward_with_angle(speed, steering_angle)
+#     print(steering_angle, speed)
+#     go.forward_with_angle(speed, steering_angle)
 
-    if gpio.digital_read(gpio.IR_L) == 0 or gpio.digital_read(gpio.IR_R) == 0:
-        time.sleep(0.1)
-        go.stop()
-        object_is_find = True
-        break
+#     if gpio.digital_read(gpio.IR_L) == 0 or gpio.digital_read(gpio.IR_R) == 0:
+#         time.sleep(0.1)
+#         go.stop()
+#         object_is_find = True
+#         break
 
-control_s.drop_object()
+# control_s.drop_object()
 
 
 # current_position = np.array([0.0, 0.0])
